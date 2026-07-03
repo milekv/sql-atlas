@@ -3,6 +3,11 @@ import { suggestIndexes } from "../index-advisor/suggestIndexes";
 import { createAnalyzerContext, uniqueValues } from "./analyzerUtils";
 import { calculateOverallScore, calculateScoreBreakdown } from "./score";
 import { analyzerRules } from "./rules";
+import {
+  createBeforeAfterRewrite,
+  createOptimizationStory,
+  extractQueryMap,
+} from "./experience";
 import type {
   AnalyzerFinding,
   AnalyzerPassedCheck,
@@ -57,6 +62,9 @@ export const analyzeQuery = (
     score: calculateOverallScore(findings),
     scoreBreakdown: calculateScoreBreakdown(findings),
     findings,
+    optimizationStory: createOptimizationStory(findings),
+    beforeAfter: createBeforeAfterRewrite(sql, findings),
+    queryMap: extractQueryMap(sql, findings),
     passedChecks,
     indexSuggestions: suggestIndexes(sql, dialect),
     relatedTopicIds: uniqueValues(

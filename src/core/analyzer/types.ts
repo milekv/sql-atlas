@@ -1,5 +1,10 @@
 import type { TranslationKey } from "../../i18n/types";
 import type { IndexSuggestion } from "../index-advisor/types";
+import type {
+  BeforeAfterRewrite,
+  OptimizationStory,
+  QueryMapSection,
+} from "./experience/types";
 
 export type SqlDialect =
   | "postgresql"
@@ -92,6 +97,9 @@ export interface QueryAnalysisResult {
   score: number;
   scoreBreakdown: ScoreBreakdown;
   findings: AnalyzerFinding[];
+  optimizationStory: OptimizationStory;
+  beforeAfter: BeforeAfterRewrite;
+  queryMap: QueryMapSection[];
   passedChecks: AnalyzerPassedCheck[];
   indexSuggestions: IndexSuggestion[];
   relatedTopicIds: string[];

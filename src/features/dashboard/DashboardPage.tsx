@@ -1,4 +1,4 @@
-import { ArrowRight, BookOpen, GitCompare, SearchCode } from "lucide-react";
+import { ArrowRight, BookOpen, GitCompare, SearchCode, Sparkles } from "lucide-react";
 import { useApp } from "../../app/AppProvider";
 import { Card } from "../../components/ui/Card";
 import { Badge } from "../../components/ui/Badge";
@@ -28,7 +28,7 @@ const quickLinkTitleKeys: Partial<Record<string, TranslationKey>> = {
 };
 
 export const DashboardPage = () => {
-  const { setPage, t } = useApp();
+  const { runDemoAnalysis, setPage, t } = useApp();
   const stats = [
     { label: t("dashboard.rules"), value: analyzerRules.length },
     { label: t("dashboard.topics"), value: contentStats.knowledgeTopics },
@@ -55,8 +55,8 @@ export const DashboardPage = () => {
   ];
 
   return (
-    <div className="space-y-6">
-      <section className="overflow-hidden rounded-lg border border-atlas-border bg-atlas-panelStrong">
+    <div className="space-y-6 atlas-page-enter">
+      <section className="atlas-hero-enter overflow-hidden rounded-lg border border-atlas-border bg-atlas-panelStrong">
         <div className="grid gap-8 p-6 md:p-8 xl:grid-cols-[1.25fr_0.75fr]">
           <div>
             <Badge tone="cyan">{t("app.tagline")}</Badge>
@@ -81,6 +81,13 @@ export const DashboardPage = () => {
                 icon={<SearchCode size={16} />}
               >
                 {t("dashboard.cta.analyze")}
+              </Button>
+              <Button
+                type="button"
+                onClick={runDemoAnalysis}
+                icon={<Sparkles size={16} />}
+              >
+                {t("dashboard.cta.demo")}
               </Button>
               <Button
                 type="button"
@@ -122,15 +129,19 @@ LIMIT 25;`}</code>
       </section>
 
       <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-        {stats.map((stat) => (
-          <Card key={stat.label} className="p-4">
+        {stats.map((stat, index) => (
+          <Card
+            key={stat.label}
+            className="atlas-stagger-item p-4"
+            style={{ animationDelay: `${index * 60}ms` }}
+          >
             <p className="text-3xl font-semibold">{stat.value}</p>
             <p className="mt-1 text-sm text-atlas-muted">{stat.label}</p>
           </Card>
         ))}
       </section>
 
-      <section className="rounded-lg border border-atlas-border bg-atlas-panel p-5">
+      <section className="atlas-animate-in rounded-lg border border-atlas-border bg-atlas-panel p-5">
         <h2 className="text-xl font-semibold">{t("dashboard.howItWorks")}</h2>
         <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
           {howItWorksSteps.map((step, index) => (
@@ -147,13 +158,17 @@ LIMIT 25;`}</code>
       </section>
 
       <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-        {dashboardQuickLinks.map((item) => {
+        {dashboardQuickLinks.map((item, index) => {
           const Icon = item.icon;
           const titleKey = quickLinkTitleKeys[item.page] ?? item.labelKey;
           const bodyKey = quickLinkBodyKeys[item.page] ?? "dashboard.subtitle";
 
           return (
-            <Card key={item.page} className="flex min-h-52 flex-col justify-between">
+            <Card
+              key={item.page}
+              className="atlas-stagger-item flex min-h-52 flex-col justify-between"
+              style={{ animationDelay: `${index * 50}ms` }}
+            >
               <div>
                 <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-md border border-atlas-cyan/40 bg-atlas-cyan/15">
                   <Icon size={19} />

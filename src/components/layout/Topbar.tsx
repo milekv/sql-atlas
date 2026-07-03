@@ -1,6 +1,7 @@
 import { Moon, Sun } from "lucide-react";
 import { useApp } from "../../app/AppProvider";
 import type { Language, ThemeMode } from "../../types";
+import { CommandPalette } from "../command-palette/CommandPalette";
 import { Button } from "../ui/Button";
 import { SelectInput } from "../ui/Field";
 
@@ -15,6 +16,7 @@ export const Topbar = () => {
         <p className="text-xs text-atlas-muted">{t("app.privacy")}</p>
       </div>
       <div className="flex flex-wrap items-center gap-2">
+        <CommandPalette />
         <label className="sr-only" htmlFor="language">
           {t("actions.language")}
         </label>

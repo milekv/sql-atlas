@@ -23,15 +23,30 @@ SQL performance issues are common, but the path from "this query is slow" to "I 
 
 SQL Atlas connects detection with learning. It does not only flag suspicious SQL; it explains why a pattern matters, links it to knowledge topics, suggests practical next steps, and keeps the whole workflow local in the browser.
 
+## What makes SQL Atlas different?
+
+- **Not just a linter:** findings are connected to severity, score impact, detected SQL fragments, and practical next steps.
+- **Not just documentation:** knowledge topics are linked from real analyzer issues, anti-patterns, and optimization recommendations.
+- **Optimization workflow:** Query Analyzer now connects detection, explanation, learning, suggested indexes, before/after examples, and Markdown export.
+- **Local-first:** no backend, no account, no query upload, no tracking.
+- **No AI:** all analysis is deterministic and testable.
+- **Bilingual from the start:** English and Polish UI/content are maintained together.
+
 ## Feature Preview
 
 | Module | What it does |
 | --- | --- |
-| Query Analyzer | Scores SQL quality, groups issues by severity, highlights detected fragments, and shows top recommendations. |
+| Query Analyzer | Scores SQL quality, groups issues by severity, highlights detected fragments, shows top recommendations, and explains optimization steps. |
+| Optimization Story Mode | Turns detected issues into a deterministic step-by-step optimization timeline with expected benefits and related knowledge topics. |
+| Before / After SQL Diff | Shows original SQL next to safe example rewrites when static rules can suggest one, with clear disclaimers. |
+| Visual Query Map | Breaks a query into SELECT, FROM, JOIN, WHERE, GROUP BY, HAVING, ORDER BY, LIMIT, and OFFSET blocks. |
 | Index Advisor | Suggests deterministic PostgreSQL-style index candidates from WHERE, JOIN, ORDER BY, GROUP BY, and functional filters. |
 | SQL Knowledge Base | Documentation-style learning module with categories, difficulty badges, dialect badges, examples, common mistakes, and performance tips. |
 | Anti-Patterns Library | Educational catalog of risky SQL patterns with bad examples, better examples, reasons, and fixes. |
 | Dialect Compare | Compares syntax across PostgreSQL, MySQL, Oracle, SQLite, and SQL Server. |
+| Command Palette | Ctrl+K / Cmd+K command palette for navigation, samples, analysis, theme/language toggles, and Markdown export. |
+| Try Demo Flow | One-click demo loads a rich sample with SELECT *, LOWER(email), and ORDER BY without LIMIT, then runs analysis immediately. |
+| Premium Animated UI | Subtle timeline, card, score, recommendation, copy feedback, and transition animations with reduced-motion support. |
 | Markdown Report Export | Generates GitHub-friendly optimization reports with score, findings, passed checks, indexes, and formatted SQL. |
 | EXPLAIN Visualizer | Typed placeholder for future PostgreSQL EXPLAIN JSON analysis and visual plan trees. |
 | Schema Visualizer | Placeholder architecture for future local schema diagrams. |
@@ -78,6 +93,9 @@ Example output:
 - **SELECT \*** detected: selecting every column can increase IO and hide schema coupling.
 - **Function on column in WHERE** detected: `LOWER(email)` can prevent a normal index on `email` from being used.
 - **ORDER BY without LIMIT** detected: sorting an unbounded result can be expensive.
+- **Optimization Story:** ordered timeline explaining what to fix first, why it matters, and the expected benefit.
+- **Before / After:** example rewrite with placeholder columns and an example `LIMIT 100`.
+- **Query Map:** visual breakdown of SELECT, FROM, WHERE, and ORDER BY fragments.
 - **Suggested functional index:**
 
 ```sql
@@ -168,10 +186,11 @@ SQL Atlas does not use `BrowserRouter`, so refresh handling on GitHub Pages does
 ```text
 src/
   app/                    App provider, page state, theme, language, latest analysis
-  components/             Layout, SQL editor, UI primitives, copy buttons, code blocks
+  components/             Layout, command palette, SQL editor, UI primitives, copy buttons, code blocks
   features/               Product pages and user-facing workflows
   core/
     analyzer/             Rule-based SQL analyzer and scoring
+      experience/         Optimization story, before/after rewrite, and query map logic
       rules/              One file per analyzer rule
     index-advisor/        Deterministic index suggestion logic
     dialects/             SQL dialect comparison data
@@ -201,6 +220,12 @@ public/
 ### v0.1.0
 
 - Query Analyzer
+- Optimization Story Mode
+- Before / After SQL Diff
+- Visual Query Map
+- Command Palette
+- Try Demo flow
+- Premium animated UI
 - Index Advisor
 - SQL Knowledge Base
 - Anti-Patterns Library
