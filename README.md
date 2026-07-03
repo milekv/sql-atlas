@@ -1,85 +1,82 @@
 # SQL Atlas
 
-**Interactive SQL Knowledge Base & Performance Toolkit**
+**Interaktywna baza wiedzy SQL i narzędzie do analizy wydajności zapytań**
 
-SQL Atlas is a local-first, no-AI SQL toolkit for developers. Paste SQL, detect anti-patterns, understand performance risks, suggest indexes, compare SQL dialects, and learn optimization techniques in English and Polish.
+SQL Atlas to lokalne, bezpieczne i działające bez AI narzędzie dla developerów. Pomaga analizować zapytania SQL, wykrywać antywzorce, sugerować indeksy, porównywać dialekty SQL i uczyć się optymalizacji zapytań. Aplikacja działa w przeglądarce i nie wysyła zapytań SQL na serwer.
 
 [![CI](https://github.com/milekv/sql-atlas/actions/workflows/ci.yml/badge.svg)](https://github.com/milekv/sql-atlas/actions/workflows/ci.yml)
-[![GitHub Pages](https://img.shields.io/badge/demo-GitHub%20Pages-40c8e8)](https://milekv.github.io/sql-atlas/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178c6)](https://www.typescriptlang.org/)
+[![Demo](https://img.shields.io/badge/demo-GitHub%20Pages-40c8e8)](https://milekv.github.io/sql-atlas/)
+[![No AI](https://img.shields.io/badge/No%20AI-rule--based-success)](#prywatnosc-i-brak-ai)
+[![Local-first](https://img.shields.io/badge/Local--first-browser%20analysis-success)](#prywatnosc-i-brak-ai)
+[![EN/PL](https://img.shields.io/badge/i18n-EN%20%7C%20PL-blue)](#dwujezyczny-interfejs)
 [![React](https://img.shields.io/badge/React-18-61dafb)](https://react.dev/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
-[![No AI](https://img.shields.io/badge/AI-none-success)](#local-first-privacy)
-[![Local-first](https://img.shields.io/badge/privacy-local--first-success)](#local-first-privacy)
-[![EN/PL](https://img.shields.io/badge/i18n-EN%20%7C%20PL-blue)](#polski-opis)
+[![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178c6)](https://www.typescriptlang.org/)
+[![Vite](https://img.shields.io/badge/Vite-build-646cff)](https://vite.dev/)
+[![MIT License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
-**Live demo:** [https://milekv.github.io/sql-atlas/](https://milekv.github.io/sql-atlas/)
+**Demo:** [https://milekv.github.io/sql-atlas/](https://milekv.github.io/sql-atlas/)
 
-> Paste SQL. Find problems. Learn why. Optimize better.
+> Wklej SQL. Znajdź problemy. Zrozum dlaczego. Optymalizuj świadomie.
 
-## Why SQL Atlas?
+## Czym jest SQL Atlas?
 
-SQL performance issues are common, but the path from "this query is slow" to "I understand what to fix" is often messy. Many developers know SQL syntax, yet struggle with indexes, EXPLAIN plans, joins, pagination, and subtle anti-patterns.
+SQL Atlas jest narzędziem dla SQL developerów, backend developerów, full-stack developerów, DBA oraz osób uczących się SQL, które chcą lepiej rozumieć wydajność zapytań. Projekt odpowiada na realny problem: zapytanie może działać, ale nadal być kosztowne, trudne do utrzymania albo ryzykowne dla danych.
 
-SQL Atlas connects detection with learning. It does not only flag suspicious SQL; it explains why a pattern matters, links it to knowledge topics, suggests practical next steps, and keeps the whole workflow local in the browser.
+Aplikacja łączy kilka warstw pracy z SQL:
 
-## What makes SQL Atlas different?
+- analizator zapytań,
+- doradcę indeksów,
+- bazę wiedzy SQL,
+- bibliotekę antywzorców,
+- porównanie dialektów SQL,
+- eksport raportu Markdown.
 
-- **Not just a linter:** findings are connected to severity, score impact, detected SQL fragments, and practical next steps.
-- **Not just documentation:** knowledge topics are linked from real analyzer issues, anti-patterns, and optimization recommendations.
-- **Optimization workflow:** Query Analyzer now connects detection, explanation, learning, suggested indexes, before/after examples, and Markdown export.
-- **Local-first:** no backend, no account, no query upload, no tracking.
-- **No AI:** all analysis is deterministic and testable.
-- **Bilingual from the start:** English and Polish UI/content are maintained together.
+SQL Atlas nie jest tylko linterem i nie jest tylko dokumentacją. Wykrywa problemy, pokazuje fragmenty zapytania, tłumaczy dlaczego dany wzorzec ma znaczenie, łączy wynik z tematami edukacyjnymi i sugeruje następne kroki. Całość działa lokalnie w przeglądarce, bez backendu i bez AI.
 
-## Feature Preview
+## Najważniejsze funkcje
 
-| Module | What it does |
+| Moduł | Opis |
 | --- | --- |
-| Query Analyzer | Scores SQL quality, groups issues by severity, highlights detected fragments, shows top recommendations, and explains optimization steps. |
-| Optimization Story Mode | Turns detected issues into a deterministic step-by-step optimization timeline with expected benefits and related knowledge topics. |
-| Before / After SQL Diff | Shows original SQL next to safe example rewrites when static rules can suggest one, with clear disclaimers. |
-| Visual Query Map | Breaks a query into SELECT, FROM, JOIN, WHERE, GROUP BY, HAVING, ORDER BY, LIMIT, and OFFSET blocks. |
-| Index Advisor | Suggests deterministic PostgreSQL-style index candidates from WHERE, JOIN, ORDER BY, GROUP BY, and functional filters. |
-| SQL Knowledge Base | Documentation-style learning module with categories, difficulty badges, dialect badges, examples, common mistakes, and performance tips. |
-| Anti-Patterns Library | Educational catalog of risky SQL patterns with bad examples, better examples, reasons, and fixes. |
-| Dialect Compare | Compares syntax across PostgreSQL, MySQL, Oracle, SQLite, and SQL Server. |
-| Command Palette | Ctrl+K / Cmd+K command palette for navigation, samples, analysis, theme/language toggles, and Markdown export. |
-| Try Demo Flow | One-click demo loads a rich sample with SELECT *, LOWER(email), and ORDER BY without LIMIT, then runs analysis immediately. |
-| Premium Animated UI | Subtle timeline, card, score, recommendation, copy feedback, and transition animations with reduced-motion support. |
-| Markdown Report Export | Generates GitHub-friendly optimization reports with score, findings, passed checks, indexes, and formatted SQL. |
-| EXPLAIN Visualizer | Typed placeholder for future PostgreSQL EXPLAIN JSON analysis and visual plan trees. |
-| Schema Visualizer | Placeholder architecture for future local schema diagrams. |
-| Local-first Privacy | No AI, no backend, no tracking, and no server upload in v1. |
-| Bilingual UI | English and Polish interface from the beginning. |
+| **Query Analyzer / Analizator zapytań** | Statyczna, regułowa analiza SQL. Grupuje problemy według ważności, pokazuje ocenę zapytania, rozbicie wyniku, wykryte fragmenty, top rekomendacje, zaliczone kontrole i sformatowany SQL. |
+| **Optimization Story / Ścieżka optymalizacji** | Gotowa funkcja analizatora. Układa wykryte problemy w kroki optymalizacji: co znaleziono, dlaczego to ważne, co zrobić i jaki może być efekt. |
+| **Before / After SQL Diff / Przed / Po** | Gotowa funkcja analizatora. Pokazuje oryginalne zapytanie i bezpieczny przykład przepisania, jeśli statyczne reguły mogą zaproponować taką zmianę. |
+| **Visual Query Map / Mapa zapytania** | Gotowa funkcja analizatora. Rozbija SQL na części takie jak SELECT, FROM, JOIN, WHERE, GROUP BY, HAVING, ORDER BY, LIMIT i OFFSET. |
+| **Index Advisor / Doradca indeksów** | Deterministyczne sugestie indeksów na podstawie WHERE, JOIN, ORDER BY, GROUP BY oraz filtrów funkcyjnych. |
+| **SQL Knowledge Base / Baza wiedzy SQL** | Dokumentacyjny moduł edukacyjny z kategoriami, poziomami trudności, przykładami, częstymi błędami i poradami wydajnościowymi. |
+| **Anti-Patterns Library / Biblioteka antywzorców** | Katalog wzorców SQL, które często szkodzą wydajności, czytelności albo bezpieczeństwu danych. |
+| **Dialect Compare / Porównanie dialektów SQL** | Porównanie składni i zachowania popularnych silników: PostgreSQL, MySQL, Oracle, SQLite i SQL Server. |
+| **Markdown Report Export / Eksport raportu Markdown** | Eksport wyniku analizy do raportu Markdown, który można wkleić do issue, pull requesta albo dokumentacji. |
+| **Command Palette / Paleta komend** | Globalna paleta `Ctrl+K` / `Cmd+K` do nawigacji, ładowania próbek, analizy SQL, zmiany języka, zmiany motywu i eksportu raportu. |
+| **Try Demo / Demo na start** | Jednym kliknięciem ładuje przykładowe zapytanie z `SELECT *`, `LOWER(email)` i `ORDER BY` bez `LIMIT`, a następnie uruchamia analizę. |
+| **EXPLAIN Visualizer** | Moduł planowany. Obecnie przygotowany jako placeholder pod przyszłą analizę planów `EXPLAIN JSON`. |
+| **Schema Visualizer** | Moduł planowany. Obecnie przygotowany jako placeholder pod przyszłe diagramy schematu i relacji między tabelami. |
 
-## Screenshots
+<a id="dwujezyczny-interfejs"></a>
 
-The screenshots below are generated from the running local app.
+### Dwujęzyczny interfejs
 
-### Dashboard
+SQL Atlas obsługuje język polski i angielski. Aplikacja wykrywa język przeglądarki przy pierwszym uruchomieniu, a użytkownik może ręcznie przełączać język w interfejsie.
 
-![SQL Atlas dashboard](public/screenshots/dashboard.png)
+### Analiza lokalna
 
-### Query Analyzer
+Analiza działa w przeglądarce. W wersji v1 projekt nie ma backendu, nie korzysta z AI i nie wysyła zapytań SQL na serwer.
 
-![SQL Atlas query analyzer](public/screenshots/query-analyzer.png)
+## Co wyróżnia projekt?
 
-### Index Advisor
+SQL Atlas nie jest kolejną aplikacją CRUD. To narzędzie rozwiązujące praktyczny problem developerów: jak przejść od „to zapytanie może być wolne” do „rozumiem, co konkretnie może być problemem i jak to sprawdzić”.
 
-![SQL Atlas index advisor](public/screenshots/index-advisor.png)
+Projekt wyróżnia się tym, że:
 
-### Knowledge Base
+- pomaga nie tylko znaleźć problem, ale też go zrozumieć,
+- łączy praktyczne reguły optymalizacyjne z edukacją,
+- wskazuje powiązane tematy wiedzy SQL,
+- pokazuje potencjalne konsekwencje wzorców takich jak `SELECT *`, funkcje w `WHERE`, `OFFSET`, `ORDER BY` bez limitu czy destrukcyjne zapytania bez `WHERE`,
+- działa lokalnie i prywatnie,
+- dobrze nadaje się jako narzędzie portfolio, projekt open-source i materiał edukacyjny.
 
-![SQL Atlas knowledge base](public/screenshots/knowledge-base.png)
+## Przykład analizy
 
-### Dialect Compare
-
-![SQL Atlas dialect compare](public/screenshots/dialect-compare.png)
-
-## Example Analysis
-
-Bad SQL:
+Przykładowe zapytanie:
 
 ```sql
 SELECT *
@@ -88,87 +85,61 @@ WHERE LOWER(email) = 'test@example.com'
 ORDER BY created_at DESC;
 ```
 
-Example output:
+SQL Atlas może wykryć między innymi:
 
-- **SELECT \*** detected: selecting every column can increase IO and hide schema coupling.
-- **Function on column in WHERE** detected: `LOWER(email)` can prevent a normal index on `email` from being used.
-- **ORDER BY without LIMIT** detected: sorting an unbounded result can be expensive.
-- **Optimization Story:** ordered timeline explaining what to fix first, why it matters, and the expected benefit.
-- **Before / After:** example rewrite with placeholder columns and an example `LIMIT 100`.
-- **Query Map:** visual breakdown of SELECT, FROM, WHERE, and ORDER BY fragments.
-- **Suggested functional index:**
+- **`SELECT *`** - wybieranie wszystkich kolumn może zwiększać I/O, zużycie pamięci i transfer danych.
+- **`LOWER(email)` w `WHERE`** - funkcja na kolumnie może utrudnić użycie zwykłego indeksu B-tree na `email`.
+- **`ORDER BY` bez `LIMIT`** - sortowanie nieograniczonego wyniku może wymagać kosztownej pracy po stronie bazy.
+- **Sugestia indeksu funkcyjnego** - dla PostgreSQL przykładowo:
 
 ```sql
-CREATE INDEX idx_customers_lower_email
-ON customers (LOWER(email));
+CREATE INDEX idx_table_lower_column
+ON table_name (LOWER(column_name));
 ```
 
-- **Suggested query shape:** select explicit columns, add a safe result bound when only a page or preview is needed, and verify the real plan.
+Analiza w SQL Atlas jest statyczna i regułowa. Wyniki należy traktować jako wskazówki do dalszej weryfikacji, a realny wpływ zmian sprawdzać na prawdziwej bazie danych przez `EXPLAIN`, `EXPLAIN ANALYZE`, metryki i dane produkcyjno-podobne.
 
-SQL Atlas performs static rule-based analysis. Always verify performance changes with production-like data and `EXPLAIN ANALYZE`.
+<a id="prywatnosc-i-brak-ai"></a>
 
-## Local-first Privacy
+## Prywatność i brak AI
 
-SQL Atlas is intentionally not an AI product.
+SQL Atlas celowo nie jest produktem AI.
 
-- No AI
-- No OpenAI API
-- No tracking
-- No backend in v1
-- No database connection required
-- SQL is analyzed locally in the browser
+- Nie używa AI.
+- Nie korzysta z OpenAI API.
+- Nie wysyła SQL na serwer.
+- Nie ma trackingu.
+- Nie wymaga konta użytkownika.
+- Nie wymaga połączenia z bazą danych.
+- Analiza działa lokalnie w przeglądarce.
 
-This makes SQL Atlas safe for learning, demos, portfolio work, and public examples. You still should not paste sensitive production queries into random online tools; SQL Atlas simply avoids uploading queries anywhere in the current version.
+Ten model jest dobry do nauki, demo, portfolio i pracy na przykładach. Nadal warto zachować ostrożność: nie należy wklejać wrażliwych produkcyjnych zapytań, nazw klientów, sekretów ani danych biznesowych do przypadkowych narzędzi online.
 
-## Installation
+## Screenshoty
 
-```bash
-npm install
-npm run dev
-```
+Poniższe screenshoty pochodzą z działającej aplikacji.
 
-Open the local URL printed by Vite, usually:
+### Dashboard
 
-```text
-http://127.0.0.1:5173/
-```
+![Dashboard SQL Atlas](public/screenshots/dashboard.png)
 
-## Development Commands
+### Analizator zapytań
 
-```bash
-npm run dev
-npm test
-npm run build
-npm run preview
-```
+![Analizator zapytań SQL Atlas](public/screenshots/query-analyzer.png)
 
-On Windows PowerShell with script execution disabled, use `npm.cmd`:
+### Doradca indeksów
 
-```bash
-npm.cmd install
-npm.cmd test
-npm.cmd run build
-```
+![Doradca indeksów SQL Atlas](public/screenshots/index-advisor.png)
 
-## GitHub Pages Deployment
+### Baza wiedzy SQL
 
-The project is configured for GitHub Pages through GitHub Actions.
+![Baza wiedzy SQL Atlas](public/screenshots/knowledge-base.png)
 
-1. Push the repository to GitHub.
-2. Open `Settings -> Pages`.
-3. Set **Build and deployment** to **GitHub Actions**.
-4. Push to `main` or `master`.
-5. The `Deploy GitHub Pages` workflow builds `dist/` and publishes it.
+### Porównanie dialektów SQL
 
-The Vite base path is computed automatically:
+![Porównanie dialektów SQL Atlas](public/screenshots/dialect-compare.png)
 
-- `milekv.github.io` repositories use `/`.
-- Project repositories such as `sql-atlas` use `/sql-atlas/`.
-- You can override the base path with `VITE_BASE_PATH`.
-
-SQL Atlas does not use `BrowserRouter`, so refresh handling on GitHub Pages does not require a custom `404.html` fallback.
-
-## Tech Stack
+## Stack technologiczny
 
 - React
 - TypeScript
@@ -176,77 +147,103 @@ SQL Atlas does not use `BrowserRouter`, so refresh handling on GitHub Pages does
 - Tailwind CSS
 - Monaco Editor
 - sql-formatter
-- Zod
 - Vitest
 - GitHub Actions
 - GitHub Pages
 
-## Architecture Overview
+## Instalacja lokalna
+
+```bash
+npm install
+npm run dev
+npm test
+npm run build
+npm run preview
+```
+
+Po uruchomieniu trybu developerskiego Vite pokaże lokalny adres aplikacji, najczęściej:
+
+```text
+http://127.0.0.1:5173/
+```
+
+Na Windows PowerShell, jeśli skrypty są zablokowane, można użyć `npm.cmd`:
+
+```bash
+npm.cmd install
+npm.cmd test
+npm.cmd run build
+```
+
+## Deployment na GitHub Pages
+
+Projekt jest przygotowany pod GitHub Pages i GitHub Actions.
+
+Najważniejsze elementy:
+
+- workflow GitHub Actions buduje aplikację i publikuje katalog `dist/`,
+- konfiguracja Vite obsługuje deployment pod ścieżką `/sql-atlas/`,
+- aplikacja nie używa `BrowserRouter`, więc odświeżanie strony na GitHub Pages nie wymaga osobnego `404.html`.
+
+Konfiguracja w GitHubie:
+
+```text
+Settings -> Pages -> Build and deployment -> GitHub Actions
+```
+
+Po wypchnięciu zmian na `main` workflow `Deploy GitHub Pages` buduje i publikuje aplikację.
+
+## Struktura projektu
 
 ```text
 src/
-  app/                    App provider, page state, theme, language, latest analysis
-  components/             Layout, command palette, SQL editor, UI primitives, copy buttons, code blocks
-  features/               Product pages and user-facing workflows
+  app/                    Provider aplikacji, stan strony, język, motyw i ostatnia analiza
+  components/             Layout, paleta komend, edytor SQL i komponenty UI
+  features/               Widoki i główne moduły produktu
   core/
-    analyzer/             Rule-based SQL analyzer and scoring
-      experience/         Optimization story, before/after rewrite, and query map logic
-      rules/              One file per analyzer rule
-    index-advisor/        Deterministic index suggestion logic
-    dialects/             SQL dialect comparison data
-    explain/              PostgreSQL EXPLAIN plan types and sample plan
-    report-export/        GitHub-friendly Markdown report generation
-  content/                Knowledge topics and anti-pattern content
-  i18n/                   English and Polish translation registry
-  samples/                Demo SQL samples
-  tests/                  Vitest unit tests for rules, indexes, and reports
+    analyzer/             Regułowy analizator SQL, scoring i logika doświadczenia analizatora
+    index-advisor/        Deterministyczne sugestie indeksów
+    dialects/             Dane do porównania dialektów SQL
+    explain/              Typy i przykładowy plan pod przyszły EXPLAIN Visualizer
+    report-export/        Eksport raportu Markdown
+  content/                Tematy wiedzy SQL i antywzorce
+  i18n/                   Tłumaczenia PL/EN i wykrywanie języka
+  samples/                Przykładowe zapytania SQL
+  tests/                  Testy Vitest dla analizatora, indeksów, eksportu i i18n
 public/
-  logo.svg
-  favicon.svg
-  screenshots/
-    dashboard.png
-    query-analyzer.png
-    index-advisor.png
-    knowledge-base.png
-    dialect-compare.png
+  screenshots/            Screenshoty używane w README
 .github/
-  workflows/
-    ci.yml                Test and build on push/PR
-    pages.yml             Deploy to GitHub Pages
+  workflows/              CI i deployment GitHub Pages
 ```
 
-## Roadmap
+## Roadmapa
 
 ### v0.1.0
 
-- Query Analyzer
-- Optimization Story Mode
-- Before / After SQL Diff
-- Visual Query Map
-- Command Palette
-- Try Demo flow
-- Premium animated UI
-- Index Advisor
-- SQL Knowledge Base
-- Anti-Patterns Library
-- Dialect Compare
-- Markdown export
-- English/Polish support
+- Analizator zapytań SQL
+- Doradca indeksów
+- Baza wiedzy SQL
+- Biblioteka antywzorców
+- Porównanie dialektów SQL
+- Eksport raportu Markdown
+- Obsługa PL/EN
 - GitHub Pages deployment
 
 ### v0.2.0
 
 - EXPLAIN JSON Visualizer
-- Better PostgreSQL plan analysis
-- Visual plan tree
+- Wizualne drzewo planu wykonania
+- Analiza operatorów takich jak Seq Scan, Index Scan, Nested Loop, Sort i Buffers
 
 ### v0.3.0
 
 - Schema Visualizer
-- `CREATE TABLE` parser
-- ERD-like relationship view
+- Parser `CREATE TABLE`
+- Wizualizacja relacji między tabelami
 
 ### v0.4.0
+
+Planowany interfejs CLI:
 
 ```bash
 npx sql-atlas analyze query.sql
@@ -254,51 +251,38 @@ npx sql-atlas analyze query.sql
 
 ### v0.5.0
 
-- GitHub Action for checking SQL files in repositories
+- GitHub Action do sprawdzania plików SQL w repozytoriach
 
 ### Future
 
 - VS Code extension
-- More dialect-specific analyzer rules
-- More knowledge topics
-- Import/export analysis history
+- Więcej reguł per dialekt
+- Więcej tematów w bazie wiedzy
+- Lokalna historia analiz
 
-## Contributing
+## Współtworzenie
 
-Contributions should keep SQL Atlas local-first, deterministic, bilingual, and testable.
+Contributions powinny utrzymywać projekt w tym samym kierunku: lokalny, deterministyczny, dwujęzyczny i testowalny.
 
-1. Install dependencies:
-
-```bash
-npm install
-```
-
-2. Run checks:
+Przed zgłoszeniem zmian uruchom:
 
 ```bash
 npm test
 npm run build
 ```
 
-3. When adding an analyzer rule:
+Przy dodawaniu reguły analizatora:
 
-- Add the rule in `src/core/analyzer/rules/`.
-- Add translation keys in `src/i18n/translations.ts`.
-- Add related knowledge topics where useful.
-- Add tests in `src/tests/analyzer.test.ts`.
-- Keep the rule deterministic and explainable.
+- dodaj regułę w `src/core/analyzer/rules/`,
+- dodaj tłumaczenia w `src/i18n/translations.ts`,
+- połącz regułę z tematami wiedzy, jeśli ma to sens,
+- dodaj testy w `src/tests/`.
 
-4. Open a pull request with a clear description and screenshots when UI changes.
-
-## Polski opis
-
-SQL Atlas to lokalne, dwujęzyczne narzędzie dla developerów pracujących z SQL. Pomaga analizować zapytania, wykrywać antywzorce, sugerować indeksy, porównywać dialekty SQL i uczyć się optymalizacji po angielsku oraz po polsku. Projekt nie używa AI, nie ma backendu i nie wysyła zapytań na serwer.
-
-## Author
+## Autor
 
 **Miłosz Kordziński**  
 GitHub: [@milekv](https://github.com/milekv)
 
-## License
+## Licencja
 
-MIT. See [LICENSE](LICENSE).
+Projekt jest dostępny na licencji MIT. Szczegóły znajdują się w pliku [LICENSE](LICENSE).
