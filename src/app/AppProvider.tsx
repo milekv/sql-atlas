@@ -10,6 +10,10 @@ import {
 import { createTranslator } from "../i18n/i18n";
 import type { AppPage, Language, ThemeMode } from "../types";
 import type { QueryAnalysisResult, SqlDialect } from "../core/analyzer/types";
+import {
+  languageStorageKey,
+  resolveInitialLanguage,
+} from "../i18n/detectLanguage";
 import { demoSql } from "../samples/demoQuery";
 import type { AppContextValue } from "./types";
 
@@ -19,8 +23,29 @@ interface AppProviderProps {
   children: ReactNode;
 }
 
+const getStoredLanguage = (): string | null => {
+  try {
+    return window.localStorage.getItem(languageStorageKey);
+  } catch {
+    return null;
+  }
+};
+
+const getBrowserLanguages = (): readonly string[] => {
+  if (navigator.languages.length > 0) {
+    return navigator.languages;
+  }
+
+  return [navigator.language];
+};
+
 export const AppProvider = ({ children }: AppProviderProps) => {
-  const [language, setLanguage] = useState<Language>("en");
+  const [language, setLanguageState] = useState<Language>(() =>
+    resolveInitialLanguage({
+      browserLanguages: getBrowserLanguages(),
+      storedLanguage: getStoredLanguage(),
+    }),
+  );
   const [theme, setTheme] = useState<ThemeMode>("dark");
   const [page, setPage] = useState<AppPage>("dashboard");
   const [analyzerSql, setAnalyzerSql] = useState("");
@@ -33,6 +58,20 @@ export const AppProvider = ({ children }: AppProviderProps) => {
     document.documentElement.classList.toggle("light", theme === "light");
     document.documentElement.classList.toggle("dark", theme === "dark");
   }, [theme]);
+
+  useEffect(() => {
+    document.documentElement.lang = language;
+  }, [language]);
+
+  const setLanguage = useCallback((nextLanguage: Language) => {
+    setLanguageState(nextLanguage);
+
+    try {
+      window.localStorage.setItem(languageStorageKey, nextLanguage);
+    } catch {
+      // Local storage can be unavailable in privacy-focused browser modes.
+    }
+  }, []);
 
   const analyzeCurrentSql = useCallback(async () => {
     if (!analyzerSql.trim()) {
