@@ -1,0 +1,67 @@
+{
+  "name": "sql-atlas",
+  "version": "0.1.0",
+  "description": "Local-first, no-AI SQL knowledge base and performance toolkit for developers.",
+  "type": "module",
+  "license": "MIT",
+  "author": "Miłosz Kordziński",
+  "homepage": "https://milekv.github.io/sql-atlas/",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/milekv/sql-atlas.git"
+  },
+  "bugs": {
+    "url": "https://github.com/milekv/sql-atlas/issues"
+  },
+  "keywords": [
+    "sql",
+    "database",
+    "query-analyzer",
+    "performance",
+    "indexes",
+    "postgresql",
+    "mysql",
+    "typescript",
+    "react",
+    "vite",
+    "local-first",
+    "no-ai",
+    "bilingual"
+  ],
+  "overrides": {
+    "dompurify": "3.4.11"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@monaco-editor/react": "^4.7.0",
+    "clsx": "^2.1.1",
+    "lucide-react": "^0.468.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "sql-formatter": "^15.4.6",
+    "tailwind-merge": "^2.5.4",
+    "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "@testing-library/jest-dom": "^6.6.3",
+    "@testing-library/react": "^15.0.7",
+    "@types/node": "^22.10.2",
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "@vitejs/plugin-react": "^4.3.4",
+    "autoprefixer": "^10.4.20",
+    "jsdom": "^25.0.1",
+    "postcss": "^8.4.49",
+    "tailwindcss": "^3.4.16",
+    "typescript": "^5.7.2",
+    "vite": "^6.0.3",
+    "vitest": "^4.1.9"
+  }
+}

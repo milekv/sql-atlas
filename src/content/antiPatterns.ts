@@ -1,0 +1,445 @@
+import type { AntiPattern } from "./types";
+
+export const antiPatterns: AntiPattern[] = [
+  {
+    id: "select-star",
+    severity: "warning",
+    badExample: "SELECT * FROM orders;",
+    goodExample: "SELECT id, customer_id, total, created_at FROM orders;",
+    relatedKnowledgeTopic: "select-basics",
+    translations: {
+      en: {
+        title: "SELECT *",
+        explanation: "Selecting every column creates fragile coupling to the table shape.",
+        whyItHurtsPerformance: "It can increase network transfer, memory use, and table lookups.",
+        suggestedFix: "Select only the columns needed by the caller.",
+      },
+      pl: {
+        title: "SELECT *",
+        explanation: "Wybieranie wszystkich kolumn tworzy kruche powiazanie z ksztaltem tabeli.",
+        whyItHurtsPerformance: "Moze zwiekszac transfer, zuzycie pamieci i odczyty tabeli.",
+        suggestedFix: "Wybieraj tylko kolumny potrzebne odbiorcy.",
+      },
+    },
+  },
+  {
+    id: "update-without-where",
+    severity: "critical",
+    badExample: "UPDATE users SET is_active = false;",
+    goodExample: "UPDATE users SET is_active = false WHERE last_login_at < CURRENT_DATE - INTERVAL '2 years';",
+    relatedKnowledgeTopic: "unsafe-updates",
+    translations: {
+      en: {
+        title: "UPDATE without WHERE",
+        explanation: "The statement modifies every row in the target table.",
+        whyItHurtsPerformance: "Large updates create locks, WAL/redo pressure, and possibly a full-table change.",
+        suggestedFix: "Add a reviewed predicate and run risky changes inside a transaction.",
+      },
+      pl: {
+        title: "UPDATE bez WHERE",
+        explanation: "Instrukcja modyfikuje kazdy wiersz tabeli docelowej.",
+        whyItHurtsPerformance: "Duze UPDATE tworza blokady, presje WAL/redo i potencjalnie zmieniaja cala tabele.",
+        suggestedFix: "Dodaj sprawdzony predykat i uruchamiaj ryzykowne zmiany w transakcji.",
+      },
+    },
+  },
+  {
+    id: "delete-without-where",
+    severity: "critical",
+    badExample: "DELETE FROM sessions;",
+    goodExample: "DELETE FROM sessions WHERE expires_at < NOW();",
+    relatedKnowledgeTopic: "unsafe-updates",
+    translations: {
+      en: {
+        title: "DELETE without WHERE",
+        explanation: "The statement removes all rows from the target table.",
+        whyItHurtsPerformance: "It can lock heavily, generate huge logs, and cause irreversible data loss.",
+        suggestedFix: "Use a predicate, count affected rows first, and keep a rollback path.",
+      },
+      pl: {
+        title: "DELETE bez WHERE",
+        explanation: "Instrukcja usuwa wszystkie wiersze z tabeli docelowej.",
+        whyItHurtsPerformance: "Moze mocno blokowac, generowac duze logi i powodowac utrate danych.",
+        suggestedFix: "Uzyj predykatu, policz wiersze przed usunieciem i miej sciezke rollback.",
+      },
+    },
+  },
+  {
+    id: "leading-wildcard-like",
+    severity: "warning",
+    badExample: "SELECT id FROM products WHERE name LIKE '%phone%';",
+    goodExample: "SELECT id FROM products WHERE name LIKE 'phone%';",
+    relatedKnowledgeTopic: "leading-wildcard-search",
+    translations: {
+      en: {
+        title: "Leading wildcard LIKE",
+        explanation: "Contains search with a leading wildcard usually cannot use a normal B-tree prefix.",
+        whyItHurtsPerformance: "The database may scan many rows to test the pattern.",
+        suggestedFix: "Use prefix search, full-text search, or trigram indexes.",
+      },
+      pl: {
+        title: "LIKE z wildcardem na poczatku",
+        explanation: "Wyszukiwanie contains z wildcardem na poczatku zwykle nie uzywa prefiksu B-tree.",
+        whyItHurtsPerformance: "Baza moze skanowac wiele wierszy, aby sprawdzic wzorzec.",
+        suggestedFix: "Uzyj prefiksu, full-text albo indeksow trigramowych.",
+      },
+    },
+  },
+  {
+    id: "function-on-column",
+    severity: "warning",
+    badExample: "SELECT id FROM users WHERE LOWER(email) = 'a@example.com';",
+    goodExample: "CREATE INDEX idx_users_lower_email ON users (LOWER(email));",
+    relatedKnowledgeTopic: "functional-indexes",
+    translations: {
+      en: {
+        title: "Function on column in WHERE",
+        explanation: "The predicate transforms the column before comparison.",
+        whyItHurtsPerformance: "A regular index on the raw column may no longer match the predicate.",
+        suggestedFix: "Normalize stored values or add a matching functional index.",
+      },
+      pl: {
+        title: "Funkcja na kolumnie w WHERE",
+        explanation: "Predykat przeksztalca kolumne przed porownaniem.",
+        whyItHurtsPerformance: "Zwykly indeks na surowej kolumnie moze nie pasowac do predykatu.",
+        suggestedFix: "Normalizuj dane albo dodaj pasujacy indeks funkcyjny.",
+      },
+    },
+  },
+  {
+    id: "order-by-without-limit",
+    severity: "info",
+    badExample: "SELECT id FROM events ORDER BY created_at DESC;",
+    goodExample: "SELECT id FROM events ORDER BY created_at DESC LIMIT 100;",
+    relatedKnowledgeTopic: "order-by",
+    translations: {
+      en: {
+        title: "ORDER BY without LIMIT",
+        explanation: "Sorting an unbounded result can do unnecessary work.",
+        whyItHurtsPerformance: "Large sorts consume memory and may spill to disk.",
+        suggestedFix: "Limit the result or filter before sorting.",
+      },
+      pl: {
+        title: "ORDER BY bez LIMIT",
+        explanation: "Sortowanie nieograniczonego wyniku moze robic zbedna prace.",
+        whyItHurtsPerformance: "Duze sortowania zuzywaja pamiec i moga przelewac sie na dysk.",
+        suggestedFix: "Ogranicz wynik albo filtruj przed sortowaniem.",
+      },
+    },
+  },
+  {
+    id: "deep-offset-pagination",
+    severity: "warning",
+    badExample: "SELECT id FROM orders ORDER BY created_at DESC LIMIT 50 OFFSET 50000;",
+    goodExample: "SELECT id FROM orders WHERE created_at < :cursor ORDER BY created_at DESC LIMIT 50;",
+    relatedKnowledgeTopic: "pagination-offset-vs-keyset",
+    translations: {
+      en: {
+        title: "Deep OFFSET pagination",
+        explanation: "Deep OFFSET requires scanning and discarding skipped rows.",
+        whyItHurtsPerformance: "Latency grows as the page number grows.",
+        suggestedFix: "Use keyset pagination with a stable cursor.",
+      },
+      pl: {
+        title: "Gleboka paginacja OFFSET",
+        explanation: "Gleboki OFFSET wymaga skanowania i odrzucania pominietych wierszy.",
+        whyItHurtsPerformance: "Opoznienie rosnie wraz z numerem strony.",
+        suggestedFix: "Uzyj paginacji keyset ze stabilnym kursorem.",
+      },
+    },
+  },
+  {
+    id: "too-many-or-conditions",
+    severity: "warning",
+    badExample: "WHERE status = 'open' OR status = 'queued' OR status = 'pending' OR status = 'held'",
+    goodExample: "WHERE status IN ('open', 'queued', 'pending', 'held')",
+    relatedKnowledgeTopic: "where-filtering",
+    translations: {
+      en: {
+        title: "Too many OR conditions",
+        explanation: "Long OR chains are harder to read and optimize.",
+        whyItHurtsPerformance: "They can weaken estimates and index choices.",
+        suggestedFix: "Use IN, UNION, or a normalized lookup table.",
+      },
+      pl: {
+        title: "Zbyt wiele OR",
+        explanation: "Dlugie lancuchy OR sa trudniejsze do czytania i optymalizacji.",
+        whyItHurtsPerformance: "Moga pogarszac estymacje i wybor indeksow.",
+        suggestedFix: "Uzyj IN, UNION albo znormalizowanej tabeli.",
+      },
+    },
+  },
+  {
+    id: "missing-join-condition",
+    severity: "critical",
+    badExample: "SELECT * FROM orders, customers;",
+    goodExample: "SELECT o.id, c.email FROM orders o JOIN customers c ON c.id = o.customer_id;",
+    relatedKnowledgeTopic: "join-fundamentals",
+    translations: {
+      en: {
+        title: "Missing JOIN condition",
+        explanation: "Tables are combined without a relationship predicate.",
+        whyItHurtsPerformance: "The result can become a Cartesian product.",
+        suggestedFix: "Use explicit JOIN ... ON predicates.",
+      },
+      pl: {
+        title: "Brak warunku JOIN",
+        explanation: "Tabele sa laczone bez predykatu relacji.",
+        whyItHurtsPerformance: "Wynik moze stac sie iloczynem kartezjanskim.",
+        suggestedFix: "Uzyj jawnych predykatow JOIN ... ON.",
+      },
+    },
+  },
+  {
+    id: "cross-join-accident",
+    severity: "warning",
+    badExample: "SELECT * FROM products CROSS JOIN stores;",
+    goodExample: "SELECT * FROM products p JOIN inventory i ON i.product_id = p.id;",
+    relatedKnowledgeTopic: "join-fundamentals",
+    translations: {
+      en: {
+        title: "CROSS JOIN by accident",
+        explanation: "A Cartesian product is rarely intended in operational queries.",
+        whyItHurtsPerformance: "It multiplies row counts and can explode memory use.",
+        suggestedFix: "Add the intended join predicate.",
+      },
+      pl: {
+        title: "Przypadkowy CROSS JOIN",
+        explanation: "Iloczyn kartezjanski rzadko jest zamierzony w zapytaniach operacyjnych.",
+        whyItHurtsPerformance: "Mnozy liczbe wierszy i moze eksplodowac pamiec.",
+        suggestedFix: "Dodaj zamierzony predykat JOIN.",
+      },
+    },
+  },
+  {
+    id: "distinct-overuse",
+    severity: "info",
+    badExample: "SELECT DISTINCT c.id FROM customers c JOIN orders o ON o.customer_id = c.id;",
+    goodExample: "SELECT c.id FROM customers c WHERE EXISTS (SELECT 1 FROM orders o WHERE o.customer_id = c.id);",
+    relatedKnowledgeTopic: "group-by",
+    translations: {
+      en: {
+        title: "Overusing DISTINCT",
+        explanation: "DISTINCT can hide duplicate-producing joins.",
+        whyItHurtsPerformance: "It often requires sort or hash work after the real problem already happened.",
+        suggestedFix: "Fix join cardinality or use EXISTS for existence checks.",
+      },
+      pl: {
+        title: "Naduzywanie DISTINCT",
+        explanation: "DISTINCT moze ukrywac JOIN-y produkujace duplikaty.",
+        whyItHurtsPerformance: "Czesto wymaga sortowania lub hash po wystapieniu problemu.",
+        suggestedFix: "Napraw kardynalnosc JOIN albo uzyj EXISTS.",
+      },
+    },
+  },
+  {
+    id: "implicit-type-conversion",
+    severity: "info",
+    badExample: "SELECT id FROM customers WHERE customer_id = '42';",
+    goodExample: "SELECT id FROM customers WHERE customer_id = 42;",
+    relatedKnowledgeTopic: "where-filtering",
+    translations: {
+      en: {
+        title: "Implicit type conversion risk",
+        explanation: "The database may cast one side of a predicate.",
+        whyItHurtsPerformance: "Casts can block index usage or produce poor estimates.",
+        suggestedFix: "Compare values using the correct type.",
+      },
+      pl: {
+        title: "Ryzyko konwersji niejawnej",
+        explanation: "Baza moze rzutowac jedna strone predykatu.",
+        whyItHurtsPerformance: "Rzutowania moga blokowac indeks albo psuc estymacje.",
+        suggestedFix: "Porownuj wartosci we wlasciwym typie.",
+      },
+    },
+  },
+  {
+    id: "not-in-null-risk",
+    severity: "warning",
+    badExample: "WHERE user_id NOT IN (SELECT user_id FROM bans)",
+    goodExample: "WHERE NOT EXISTS (SELECT 1 FROM bans b WHERE b.user_id = users.id)",
+    relatedKnowledgeTopic: "null-semantics",
+    translations: {
+      en: {
+        title: "NOT IN with NULL risk",
+        explanation: "NULL values inside the list can change the result unexpectedly.",
+        whyItHurtsPerformance: "The pattern is often harder to reason about and optimize.",
+        suggestedFix: "Prefer NOT EXISTS and handle NULL explicitly.",
+      },
+      pl: {
+        title: "NOT IN z ryzykiem NULL",
+        explanation: "NULL w liscie moze nieoczekiwanie zmienic wynik.",
+        whyItHurtsPerformance: "Ten wzorzec jest trudniejszy do rozumienia i optymalizacji.",
+        suggestedFix: "Preferuj NOT EXISTS i jawnie obsluguj NULL.",
+      },
+    },
+  },
+  {
+    id: "too-many-indexes",
+    severity: "info",
+    badExample: "CREATE INDEX idx_a ON orders(a);\nCREATE INDEX idx_a_b ON orders(a, b);",
+    goodExample: "Keep the composite index if it covers the single-column access pattern.",
+    relatedKnowledgeTopic: "composite-indexes",
+    translations: {
+      en: {
+        title: "Too many indexes",
+        explanation: "Overlapping indexes create maintenance cost.",
+        whyItHurtsPerformance: "Every write has to update more structures.",
+        suggestedFix: "Audit redundant indexes with real workload data.",
+      },
+      pl: {
+        title: "Zbyt wiele indeksow",
+        explanation: "Nakladajace sie indeksy tworza koszt utrzymania.",
+        whyItHurtsPerformance: "Kazdy zapis musi aktualizowac wiecej struktur.",
+        suggestedFix: "Audytuj redundantne indeksy na realnym workloadzie.",
+      },
+    },
+  },
+  {
+    id: "missing-foreign-key-index",
+    severity: "warning",
+    badExample: "orders.customer_id references customers.id but has no index",
+    goodExample: "CREATE INDEX idx_orders_customer_id ON orders (customer_id);",
+    relatedKnowledgeTopic: "foreign-keys",
+    translations: {
+      en: {
+        title: "Missing index on foreign key",
+        explanation: "Join and delete paths often need child-key indexes.",
+        whyItHurtsPerformance: "Joins or parent deletes can scan child tables.",
+        suggestedFix: "Index foreign keys that are used in joins or integrity checks.",
+      },
+      pl: {
+        title: "Brak indeksu na kluczu obcym",
+        explanation: "Sciezki JOIN i DELETE czesto potrzebuja indeksow kluczy dziecka.",
+        whyItHurtsPerformance: "JOIN albo usuniecie rodzica moze skanowac tabele dziecka.",
+        suggestedFix: "Indeksuj klucze obce uzywane w JOIN i kontrolach integralnosci.",
+      },
+    },
+  },
+  {
+    id: "low-cardinality-index",
+    severity: "info",
+    badExample: "CREATE INDEX idx_users_is_active ON users (is_active);",
+    goodExample: "CREATE INDEX idx_users_active_created ON users (created_at) WHERE is_active = true;",
+    relatedKnowledgeTopic: "index-basics",
+    translations: {
+      en: {
+        title: "Low-cardinality index misuse",
+        explanation: "A simple index on a boolean-like column may not be selective.",
+        whyItHurtsPerformance: "The optimizer may prefer a scan if most rows match.",
+        suggestedFix: "Use partial or composite indexes that match real filters.",
+      },
+      pl: {
+        title: "Zle uzycie indeksu niskiej kardynalnosci",
+        explanation: "Prosty indeks na kolumnie boolean moze byc malo selektywny.",
+        whyItHurtsPerformance: "Optymalizator moze wybrac skan, gdy pasuje wiekszosc wierszy.",
+        suggestedFix: "Uzyj indeksow czesciowych lub zlozonych pasujacych do realnych filtrow.",
+      },
+    },
+  },
+  {
+    id: "comma-separated-values",
+    severity: "warning",
+    badExample: "tags = 'sql,postgres,indexes'",
+    goodExample: "article_tags(article_id, tag_id)",
+    relatedKnowledgeTopic: "schema-design-basics",
+    translations: {
+      en: {
+        title: "Storing comma-separated values",
+        explanation: "Lists inside one string break relational modeling.",
+        whyItHurtsPerformance: "Filtering requires string scans and awkward parsing.",
+        suggestedFix: "Use a relationship table with proper keys and indexes.",
+      },
+      pl: {
+        title: "Przechowywanie wartosci po przecinku",
+        explanation: "Listy w jednym stringu lamia model relacyjny.",
+        whyItHurtsPerformance: "Filtrowanie wymaga skanow tekstu i parsowania.",
+        suggestedFix: "Uzyj tabeli relacji z kluczami i indeksami.",
+      },
+    },
+  },
+  {
+    id: "n-plus-one",
+    severity: "warning",
+    badExample: "SELECT * FROM comments WHERE post_id = ? LIMIT 1; -- repeated in a loop",
+    goodExample: "SELECT * FROM comments WHERE post_id = ANY(:post_ids);",
+    relatedKnowledgeTopic: "join-fundamentals",
+    translations: {
+      en: {
+        title: "N+1 query pattern",
+        explanation: "The application runs one query per parent row.",
+        whyItHurtsPerformance: "Round trips and repeated lookups multiply quickly.",
+        suggestedFix: "Batch related reads with IN, ANY, JOIN, or preloading.",
+      },
+      pl: {
+        title: "Wzorzec N+1",
+        explanation: "Aplikacja uruchamia jedno zapytanie na wiersz rodzica.",
+        whyItHurtsPerformance: "Round tripy i powtarzalne lookupy szybko sie mnoza.",
+        suggestedFix: "Batchuj odczyty przez IN, ANY, JOIN albo preload.",
+      },
+    },
+  },
+  {
+    id: "unbounded-result-set",
+    severity: "info",
+    badExample: "SELECT id, payload FROM events;",
+    goodExample: "SELECT id, payload FROM events WHERE created_at >= :from_date LIMIT 1000;",
+    relatedKnowledgeTopic: "unbounded-result-set",
+    translations: {
+      en: {
+        title: "Unbounded result set",
+        explanation: "The result grows with the table unless constrained.",
+        whyItHurtsPerformance: "Large results increase database, network, and client pressure.",
+        suggestedFix: "Add filters, pagination, aggregation, or streaming export paths.",
+      },
+      pl: {
+        title: "Nieograniczony wynik",
+        explanation: "Wynik rosnie razem z tabela, jesli nie ma ograniczen.",
+        whyItHurtsPerformance: "Duze wyniki obciazaja baze, siec i klienta.",
+        suggestedFix: "Dodaj filtry, paginacje, agregacje albo streaming eksportu.",
+      },
+    },
+  },
+  {
+    id: "sorting-large-result",
+    severity: "warning",
+    badExample: "SELECT * FROM logs ORDER BY created_at DESC;",
+    goodExample: "SELECT id, message FROM logs WHERE created_at >= :from_date ORDER BY created_at DESC LIMIT 200;",
+    relatedKnowledgeTopic: "order-by",
+    translations: {
+      en: {
+        title: "Sorting large result sets",
+        explanation: "Sorting everything can dominate query time.",
+        whyItHurtsPerformance: "The database may allocate large memory or spill to disk.",
+        suggestedFix: "Filter and limit before sorting, and align indexes with the sort.",
+      },
+      pl: {
+        title: "Sortowanie duzych wynikow",
+        explanation: "Sortowanie wszystkiego moze zdominowac czas zapytania.",
+        whyItHurtsPerformance: "Baza moze alokowac duza pamiec albo przelewac na dysk.",
+        suggestedFix: "Filtruj i limituj przed sortowaniem oraz dopasuj indeksy.",
+      },
+    },
+  },
+  {
+    id: "order-by-random",
+    severity: "warning",
+    badExample: "SELECT id FROM products ORDER BY random() LIMIT 1;",
+    goodExample: "SELECT id FROM products TABLESAMPLE SYSTEM (1) LIMIT 1;",
+    relatedKnowledgeTopic: "query-optimization-basics",
+    translations: {
+      en: {
+        title: "ORDER BY random",
+        explanation: "Random sorting often evaluates a random value for every candidate row.",
+        whyItHurtsPerformance: "The database may sort the full set just to return a small sample.",
+        suggestedFix: "Use sampling, precomputed random keys, or engine-specific techniques.",
+      },
+      pl: {
+        title: "ORDER BY random",
+        explanation: "Losowe sortowanie czesto liczy wartosc losowa dla kazdego kandydata.",
+        whyItHurtsPerformance: "Baza moze sortowac caly zbior, aby zwrocic mala probke.",
+        suggestedFix: "Uzyj samplingu, precomputed random keys albo technik dialektu.",
+      },
+    },
+  },
+];
