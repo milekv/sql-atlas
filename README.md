@@ -48,7 +48,7 @@ SQL Atlas nie jest tylko linterem i nie jest tylko dokumentacją. Wykrywa proble
 | **Markdown Report Export / Eksport raportu Markdown** | Eksport wyniku analizy do raportu Markdown, który można wkleić do issue, pull requesta albo dokumentacji. |
 | **Command Palette / Paleta komend** | Globalna paleta `Ctrl+K` / `Cmd+K` do nawigacji, ładowania próbek, analizy SQL, zmiany języka, zmiany motywu i eksportu raportu. |
 | **Try Demo / Demo na start** | Jednym kliknięciem ładuje przykładowe zapytanie z `SELECT *`, `LOWER(email)` i `ORDER BY` bez `LIMIT`, a następnie uruchamia analizę. |
-| **EXPLAIN Visualizer** | Moduł planowany. Obecnie przygotowany jako placeholder pod przyszłą analizę planów `EXPLAIN JSON`. |
+| **EXPLAIN Visualizer** | Lokalny parser planów PostgreSQL `EXPLAIN (ANALYZE, BUFFERS, FORMAT JSON)`. Pokazuje czasy, bufory, drzewo operatorów, błędy estymacji, kosztowne skany, filtrowanie i pracę na dysku. |
 | **Schema Visualizer** | Moduł planowany. Obecnie przygotowany jako placeholder pod przyszłe diagramy schematu i relacji między tabelami. |
 
 <a id="dwujezyczny-interfejs"></a>

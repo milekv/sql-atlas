@@ -42,3 +42,48 @@ export const sampleExplainPlan: PostgresExplainPlanNode = {
     },
   ],
 };
+
+export const sampleExplainJson = JSON.stringify(
+  [
+    {
+      Plan: {
+        "Node Type": "Nested Loop",
+        "Startup Cost": 0.85,
+        "Total Cost": 1842.55,
+        "Plan Rows": 500,
+        "Actual Rows": 1200,
+        "Actual Startup Time": 0.12,
+        "Actual Total Time": 92.4,
+        "Actual Loops": 1,
+        "Shared Hit Blocks": 8020,
+        "Shared Read Blocks": 414,
+        Plans: [
+          {
+            "Node Type": "Index Scan",
+            "Relation Name": "customers",
+            "Index Name": "idx_customers_status",
+            "Plan Rows": 300,
+            "Actual Rows": 310,
+            "Actual Total Time": 8.6,
+            "Shared Hit Blocks": 180,
+            "Shared Read Blocks": 12,
+          },
+          {
+            "Node Type": "Seq Scan",
+            "Relation Name": "orders",
+            "Plan Rows": 900,
+            "Actual Rows": 14500,
+            "Actual Total Time": 81.7,
+            "Rows Removed by Filter": 42000,
+            "Shared Hit Blocks": 7840,
+            "Shared Read Blocks": 402,
+          },
+        ],
+      },
+      "Planning Time": 1.82,
+      "Execution Time": 94.13,
+    },
+  ],
+  null,
+  2,
+);
