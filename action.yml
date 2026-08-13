@@ -1,0 +1,37 @@
+name: SQL Atlas
+description: Analyze SQL files with deterministic rules and annotate pull requests.
+author: milekv
+
+inputs:
+  paths:
+    description: Newline-separated glob patterns for SQL files.
+    required: false
+    default: "**/*.sql"
+  dialect:
+    description: postgresql, mysql, oracle, sqlite, sqlserver or generic.
+    required: false
+    default: postgresql
+  fail-on:
+    description: Minimum severity that fails the step. Use none to report only.
+    required: false
+    default: critical
+  min-score:
+    description: Fail when any SQL file scores below this value. Use 0 to disable.
+    required: false
+    default: "0"
+
+outputs:
+  files:
+    description: Number of SQL files analyzed.
+  findings:
+    description: Total number of findings.
+  lowest-score:
+    description: Lowest score across analyzed SQL files.
+
+runs:
+  using: node24
+  main: dist-action/index.js
+
+branding:
+  icon: database
+  color: blue

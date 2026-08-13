@@ -1,6 +1,6 @@
 {
   "name": "sql-atlas",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "description": "Local-first, no-AI SQL knowledge base and performance toolkit for developers.",
   "type": "module",
   "license": "MIT",
@@ -45,16 +45,18 @@
   },
   "scripts": {
     "dev": "vite",
-    "build": "npm run typecheck && npm run build:web && npm run build:cli",
+    "build": "npm run typecheck && npm run build:web && npm run build:cli && npm run build:action",
     "build:web": "vite build",
     "build:cli": "node scripts/build-cli.mjs",
+    "build:action": "node scripts/build-action.mjs",
     "prepack": "npm run build:cli",
     "test": "vitest run",
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit",
     "preview": "vite preview"
   },
-  "dependencies": {
+  "dependencies": {},
+  "devDependencies": {
     "@monaco-editor/react": "^4.7.0",
     "clsx": "^2.1.1",
     "lucide-react": "^0.468.0",
@@ -62,9 +64,7 @@
     "react-dom": "^18.3.1",
     "sql-formatter": "^15.4.6",
     "tailwind-merge": "^2.5.4",
-    "zod": "^3.24.1"
-  },
-  "devDependencies": {
+    "zod": "^3.24.1",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^15.0.7",
     "@types/node": "^22.10.2",

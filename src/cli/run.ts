@@ -53,7 +53,10 @@ const severityRank: Record<Exclude<AnalyzerSeverity, "success">, number> = {
   info: 1,
 };
 
-const failedPolicy = (options: AnalyzeOptions, analyses: CliAnalysis[]): boolean => {
+export const failedPolicy = (
+  options: Pick<AnalyzeOptions, "failOn" | "minScore">,
+  analyses: CliAnalysis[],
+): boolean => {
   if (
     options.minScore !== undefined &&
     analyses.some(({ result }) => result.score < options.minScore!)

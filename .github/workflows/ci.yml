@@ -29,3 +29,6 @@ jobs:
 
       - name: Build
         run: npm run build
+
+      - name: Verify GitHub Action bundle
+        run: git diff --exit-code -- dist-action/index.js

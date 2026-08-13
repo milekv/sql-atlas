@@ -80,7 +80,7 @@ const markdownReport = (analyses: CliAnalysis[]): string =>
   analyses
     .map(
       ({ input, result }) =>
-        `<!-- source: ${input.source} -->\n\n${createMarkdownReport({
+        `<!-- source: ${input.source} -->\n\n**Source:** \`${input.source}\`\n\n${createMarkdownReport({
           analysis: result,
           language: "en",
           t,

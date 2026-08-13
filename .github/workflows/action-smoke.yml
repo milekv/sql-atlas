@@ -1,0 +1,33 @@
+name: GitHub Action smoke test
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  action-smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Analyze example SQL
+        id: sql-atlas
+        uses: ./
+        with:
+          paths: examples/*.sql
+          dialect: postgresql
+          fail-on: critical
+          min-score: 60
+
+      - name: Verify outputs
+        shell: bash
+        run: |
+          test "${{ steps.sql-atlas.outputs.files }}" = "1"
+          test "${{ steps.sql-atlas.outputs.findings }}" = "0"
+          test "${{ steps.sql-atlas.outputs.lowest-score }}" = "100"

@@ -16,7 +16,7 @@ SQL Atlas to lokalne, bezpieczne i działające bez AI narzędzie dla developer�
 
 **Demo:** [https://milekv.github.io/sql-atlas/](https://milekv.github.io/sql-atlas/)
 
-**Current version:** `v0.4.0`
+**Current version:** `v0.5.0`
 
 > Wklej SQL. Znajdź problemy. Zrozum dlaczego. Optymalizuj świadomie.
 
@@ -169,7 +169,7 @@ The CLI runs the same deterministic analyzer from a terminal. It accepts one or
 more SQL files, or SQL piped through standard input. Analysis stays local.
 
 ```bash
-npx --yes https://github.com/milekv/sql-atlas/releases/download/v0.4.0/sql-atlas-0.4.0.tgz analyze query.sql
+npx --yes https://github.com/milekv/sql-atlas/releases/download/v0.5.0/sql-atlas-0.5.0.tgz analyze query.sql
 ```
 
 The command above runs the package attached to the GitHub release. The package
@@ -178,7 +178,7 @@ is also prepared for the shorter `npx sql-atlas` command after npm publication.
 Analyze several files for PostgreSQL and return JSON:
 
 ```bash
-npx --yes https://github.com/milekv/sql-atlas/releases/download/v0.4.0/sql-atlas-0.4.0.tgz analyze migrations/001.sql migrations/002.sql \
+npx --yes https://github.com/milekv/sql-atlas/releases/download/v0.5.0/sql-atlas-0.5.0.tgz analyze migrations/001.sql migrations/002.sql \
   --dialect postgresql \
   --format json
 ```
@@ -187,14 +187,14 @@ Use a policy threshold in CI. Exit code `1` means the analysis completed but the
 configured policy failed:
 
 ```bash
-npx --yes https://github.com/milekv/sql-atlas/releases/download/v0.4.0/sql-atlas-0.4.0.tgz analyze schema.sql --fail-on critical --min-score 70
+npx --yes https://github.com/milekv/sql-atlas/releases/download/v0.5.0/sql-atlas-0.5.0.tgz analyze schema.sql --fail-on critical --min-score 70
 ```
 
 Pipe SQL from another command or export a Markdown report:
 
 ```bash
-echo "SELECT * FROM customers;" | npx --yes https://github.com/milekv/sql-atlas/releases/download/v0.4.0/sql-atlas-0.4.0.tgz analyze -
-npx --yes https://github.com/milekv/sql-atlas/releases/download/v0.4.0/sql-atlas-0.4.0.tgz analyze query.sql --format markdown --output sql-report.md
+echo "SELECT * FROM customers;" | npx --yes https://github.com/milekv/sql-atlas/releases/download/v0.5.0/sql-atlas-0.5.0.tgz analyze -
+npx --yes https://github.com/milekv/sql-atlas/releases/download/v0.5.0/sql-atlas-0.5.0.tgz analyze query.sql --format markdown --output sql-report.md
 ```
 
 Supported dialects are `postgresql`, `mysql`, `oracle`, `sqlite`, `sqlserver`
@@ -207,6 +207,43 @@ CLI exit codes:
 - `2` - invalid arguments, unreadable input or empty SQL
 
 Append `--help` to the package command for the complete command reference.
+
+## GitHub Action
+
+SQL Atlas can analyze SQL files in pull requests without sending their content
+to an external service. Add this workflow to a repository:
+
+```yaml
+name: SQL review
+
+on:
+  pull_request:
+    paths:
+      - "**/*.sql"
+
+permissions:
+  contents: read
+
+jobs:
+  sql-atlas:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: milekv/sql-atlas@v0.5.0
+        with:
+          paths: |
+            migrations/**/*.sql
+            schema/**/*.sql
+          dialect: postgresql
+          fail-on: critical
+          min-score: 60
+```
+
+The action adds file annotations for findings, writes a Markdown report to the
+job summary and exposes `files`, `findings` and `lowest-score` outputs. Empty
+files are skipped with a warning. The step fails with exit code `1` only when a
+configured policy is violated, and with exit code `2` for configuration or
+input errors.
 
 Po uruchomieniu trybu developerskiego Vite pokaże lokalny adres aplikacji, najczęściej:
 
@@ -298,12 +335,16 @@ Wersja `v0.3.0` obejmuje również funkcje z `v0.1.0` i `v0.2.0`.
 - Stabilne kody wyjścia i obsługa wielu plików
 
 ```bash
-npx --yes https://github.com/milekv/sql-atlas/releases/download/v0.4.0/sql-atlas-0.4.0.tgz analyze query.sql
+npx --yes https://github.com/milekv/sql-atlas/releases/download/v0.5.0/sql-atlas-0.5.0.tgz analyze query.sql
 ```
 
 ### v0.5.0
 
 - GitHub Action do sprawdzania plików SQL w repozytoriach
+- Obsługa globów i wielu plików
+- Adnotacje plików oraz raport w podsumowaniu joba
+- Progi ważności i minimalnego wyniku
+- Wyjścia `files`, `findings` i `lowest-score`
 
 ### Future
 
