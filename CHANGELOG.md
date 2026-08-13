@@ -1,5 +1,15 @@
 # Changelog
 
+## Unreleased
+
+### Analysis accuracy
+
+- Evaluate rules per SQL statement so one query cannot hide or trigger a finding in another query.
+- Keep Index Advisor candidates scoped to the statement that produced them.
+- Only report literal `NOT IN` null risk when the list contains an actual `NULL` token.
+- Accept `NOT IN` subqueries that explicitly filter null values.
+- Stop guessing PostgreSQL implicit conversion risk from column names and unknown string literals.
+
 ## 0.6.0 - 2026-08-13
 
 ### Analysis accuracy

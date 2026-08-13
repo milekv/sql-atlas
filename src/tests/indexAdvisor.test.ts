@@ -36,4 +36,21 @@ describe("index advisor", () => {
       "orders (status, created_at)",
     );
   });
+
+  it("does not combine index columns across SQL statements", () => {
+    const suggestions = suggestIndexes(`
+      SELECT id FROM audit_log ORDER BY created_at DESC;
+      SELECT id FROM users ORDER BY created_at DESC LIMIT 20;
+    `);
+
+    expect(suggestions).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ tableName: "audit_log", columns: ["created_at"] }),
+        expect.objectContaining({ tableName: "users", columns: ["created_at"] }),
+      ]),
+    );
+    expect(suggestions.every((suggestion) =>
+      suggestion.columns.every((column) => !column.includes("select")),
+    )).toBe(true);
+  });
 });

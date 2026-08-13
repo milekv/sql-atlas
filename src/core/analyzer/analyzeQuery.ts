@@ -56,7 +56,18 @@ export const analyzeQuery = (
   const ignored = inlineIgnoredRules(sql);
   for (const rule of options.ignoreRules ?? []) ignored.add(rule);
   const activeRules = analyzerRules.filter((rule) => !ignored.has(rule.id));
-  const findings = activeRules.map((rule) => rule.analyze(context)).filter(isFinding);
+  const statementContexts = context.statements.length > 1
+    ? context.statements.map((statement) => createAnalyzerContext(statement, dialect))
+    : [context];
+  const findings = activeRules
+    .map((rule) => {
+      for (const statementContext of statementContexts) {
+        const finding = rule.analyze(statementContext);
+        if (finding) return finding;
+      }
+      return null;
+    })
+    .filter(isFinding);
   const findingIds = new Set(findings.map((finding) => finding.id));
   const passedChecks: AnalyzerPassedCheck[] = activeRules
     .filter((rule) => !findingIds.has(rule.id))

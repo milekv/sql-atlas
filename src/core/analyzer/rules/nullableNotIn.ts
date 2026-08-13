@@ -12,7 +12,7 @@ export const nullableNotInRule: AnalyzerRule = {
       /\bnot\s+in\s*\(\s*select\s+[\s\S]*?\)/i,
     );
 
-    if (!fragment) {
+    if (!fragment || /\bis\s+not\s+null\b/i.test(fragment)) {
       return null;
     }
 

@@ -129,6 +129,24 @@ describe("SQL analyzer rules", () => {
     );
   });
 
+  it("does not warn for a NOT IN literal list without NULL", () => {
+    const result = analyzeQuery(
+      "SELECT id FROM users WHERE status NOT IN ('active', 'pending');",
+    );
+    expect(result.findings.map((finding) => finding.id)).not.toContain(
+      "not-in-null-risk",
+    );
+  });
+
+  it("does not treat the string value NULL as a NULL token", () => {
+    const result = analyzeQuery(
+      "SELECT id FROM users WHERE status NOT IN ('NULL', 'active');",
+    );
+    expect(result.findings.map((finding) => finding.id)).not.toContain(
+      "not-in-null-risk",
+    );
+  });
+
   it("does not report the generic NOT IN rule for a subquery", () => {
     const result = analyzeQuery(
       "SELECT id FROM users WHERE id NOT IN (SELECT user_id FROM bans);",
@@ -142,8 +160,21 @@ describe("SQL analyzer rules", () => {
   });
 
   it("detects implicit conversion risk", () => {
-    expectRule(
+    const mysql = analyzeQuery(
       "SELECT id FROM customers WHERE customer_id = '42';",
+      "mysql",
+    );
+    expect(mysql.findings.map((finding) => finding.id)).toContain(
+      "implicit-conversion-risk",
+    );
+  });
+
+  it("does not guess an implicit conversion for PostgreSQL unknown literals", () => {
+    const result = analyzeQuery(
+      "SELECT id FROM customers WHERE customer_id = '42';",
+      "postgresql",
+    );
+    expect(result.findings.map((finding) => finding.id)).not.toContain(
       "implicit-conversion-risk",
     );
   });

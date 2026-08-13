@@ -58,4 +58,50 @@ describe("realistic PostgreSQL parsing", () => {
       "group-by-many-columns",
     );
   });
+
+  it("evaluates limits inside each statement instead of across the file", () => {
+    const sql = `
+      SELECT id FROM audit_log ORDER BY created_at DESC;
+      SELECT id FROM users ORDER BY created_at DESC LIMIT 20;
+    `;
+    expect(analyzeQuery(sql).findings.map((finding) => finding.id)).toContain(
+      "order-by-without-limit",
+    );
+  });
+
+  it("does not combine JOIN counts from separate statements", () => {
+    const sql = `
+      SELECT a.id FROM a JOIN b ON b.a_id = a.id LIMIT 1;
+      SELECT c.id FROM c JOIN d ON d.c_id = c.id LIMIT 1;
+      SELECT e.id FROM e JOIN f ON f.e_id = e.id LIMIT 1;
+      SELECT g.id FROM g JOIN h ON h.g_id = g.id LIMIT 1;
+      SELECT i.id FROM i JOIN j ON j.i_id = i.id LIMIT 1;
+    `;
+    expect(analyzeQuery(sql).findings.map((finding) => finding.id)).not.toContain(
+      "too-many-joins",
+    );
+  });
+
+  it("does not let a predicate in another statement hide a missing JOIN condition", () => {
+    const sql = `
+      SELECT orders.id FROM orders JOIN customers;
+      SELECT users.id FROM users JOIN teams ON teams.id = users.team_id LIMIT 10;
+    `;
+    expect(analyzeQuery(sql).findings.map((finding) => finding.id)).toContain(
+      "missing-join-condition",
+    );
+  });
+
+  it("accepts a NOT IN subquery that explicitly filters NULL values", () => {
+    const sql = `
+      SELECT id
+      FROM users
+      WHERE id NOT IN (
+        SELECT user_id FROM bans WHERE user_id IS NOT NULL
+      );
+    `;
+    expect(analyzeQuery(sql).findings.map((finding) => finding.id)).not.toContain(
+      "nullable-not-in",
+    );
+  });
 });
