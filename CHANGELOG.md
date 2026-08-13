@@ -1,5 +1,23 @@
 # Changelog
 
+## 0.4.0 - 2026-08-13
+
+### CLI
+
+- Analyze one or more SQL files from the terminal.
+- Read SQL from standard input.
+- Select PostgreSQL, MySQL, Oracle, SQLite, SQL Server or generic SQL.
+- Produce human-readable text, structured JSON or Markdown reports.
+- Write reports to a file with `--output`.
+- Enforce CI policies with `--fail-on` and `--min-score`.
+- Return stable exit codes for success, policy failures and input errors.
+
+### Packaging
+
+- Build a standalone Node.js 20 CLI bundle.
+- Include only the CLI, documentation, changelog and license in the npm package.
+- Add unit coverage for arguments, input modes, reports, policy failures and errors.
+
 ## 0.3.0 - 2026-08-13
 
 First tagged release of SQL Atlas as a usable local SQL analysis toolkit.
