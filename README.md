@@ -1,5 +1,25 @@
 # SQL Atlas
 
+[![GitHub Marketplace](https://img.shields.io/badge/Marketplace-SQL%20Atlas-blue?logo=github)](https://github.com/marketplace/actions/sql-atlas)
+
+## GitHub Action quick start
+
+Analyze SQL files in pull requests with deterministic rules, file annotations and
+a Markdown job summary. The Action runs locally on the GitHub runner and does not
+send SQL to an external service.
+
+```yaml
+- uses: actions/checkout@v7
+- uses: milekv/sql-atlas@v0.5.0
+  with:
+    paths: "**/*.sql"
+    dialect: postgresql
+    fail-on: critical
+```
+
+[Open the Marketplace listing](https://github.com/marketplace/actions/sql-atlas)
+or continue to the [complete Action reference](#github-action).
+
 **Interaktywna baza wiedzy SQL i narzędzie do analizy wydajności zapytań**
 
 SQL Atlas to lokalne, bezpieczne i działające bez AI narzędzie dla developerów. Pomaga analizować zapytania SQL, wykrywać antywzorce, sugerować indeksy, porównywać dialekty SQL i uczyć się optymalizacji zapytań. Aplikacja działa w przeglądarce i nie wysyła zapytań SQL na serwer.
