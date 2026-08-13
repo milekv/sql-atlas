@@ -1,4 +1,8 @@
-import { stripSqlComments, uniqueValues } from "../analyzer/analyzerUtils";
+import {
+  splitSqlStatements,
+  stripSqlComments,
+  uniqueValues,
+} from "../analyzer/analyzerUtils";
 import type { SqlDialect } from "../analyzer/types";
 import type {
   ColumnReference,
@@ -237,7 +241,7 @@ const dedupeSuggestions = (suggestions: IndexSuggestion[]): IndexSuggestion[] =>
   });
 };
 
-export const suggestIndexes = (
+const suggestIndexesForStatement = (
   sql: string,
   _dialect: SqlDialect = "postgresql",
 ): IndexSuggestion[] => {
@@ -371,5 +375,15 @@ export const suggestIndexes = (
     );
   });
 
-  return dedupeSuggestions(suggestions).slice(0, 10);
+  return dedupeSuggestions(suggestions);
 };
+
+export const suggestIndexes = (
+  sql: string,
+  dialect: SqlDialect = "postgresql",
+): IndexSuggestion[] =>
+  dedupeSuggestions(
+    splitSqlStatements(sql).flatMap((statement) =>
+      suggestIndexesForStatement(statement, dialect),
+    ),
+  ).slice(0, 10);

@@ -7,7 +7,10 @@ export const notInNullRiskRule: AnalyzerRule = {
   passedKey: "rule.not-in-null-risk.passed",
   category: "safety",
   analyze: (context) => {
-    const fragment = firstMatch(context, /\bnot\s+in\s*\((?!\s*select\b)[^)]*\)/i, "comments");
+    const fragment = firstMatch(
+      context,
+      /\bnot\s+in\s*\((?!\s*select\b)(?=[^)]*\bnull\b)[^)]*\)/i,
+    );
 
     if (!fragment) {
       return null;
