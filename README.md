@@ -16,7 +16,7 @@ SQL Atlas to lokalne, bezpieczne i działające bez AI narzędzie dla developer�
 
 **Demo:** [https://milekv.github.io/sql-atlas/](https://milekv.github.io/sql-atlas/)
 
-**Current version:** `v0.3.0`
+**Current version:** `v0.4.0`
 
 > Wklej SQL. Znajdź problemy. Zrozum dlaczego. Optymalizuj świadomie.
 
@@ -163,6 +163,51 @@ npm run build
 npm run preview
 ```
 
+## CLI
+
+The CLI runs the same deterministic analyzer from a terminal. It accepts one or
+more SQL files, or SQL piped through standard input. Analysis stays local.
+
+```bash
+npx --yes https://github.com/milekv/sql-atlas/releases/download/v0.4.0/sql-atlas-0.4.0.tgz analyze query.sql
+```
+
+The command above runs the package attached to the GitHub release. The package
+is also prepared for the shorter `npx sql-atlas` command after npm publication.
+
+Analyze several files for PostgreSQL and return JSON:
+
+```bash
+npx --yes https://github.com/milekv/sql-atlas/releases/download/v0.4.0/sql-atlas-0.4.0.tgz analyze migrations/001.sql migrations/002.sql \
+  --dialect postgresql \
+  --format json
+```
+
+Use a policy threshold in CI. Exit code `1` means the analysis completed but the
+configured policy failed:
+
+```bash
+npx --yes https://github.com/milekv/sql-atlas/releases/download/v0.4.0/sql-atlas-0.4.0.tgz analyze schema.sql --fail-on critical --min-score 70
+```
+
+Pipe SQL from another command or export a Markdown report:
+
+```bash
+echo "SELECT * FROM customers;" | npx --yes https://github.com/milekv/sql-atlas/releases/download/v0.4.0/sql-atlas-0.4.0.tgz analyze -
+npx --yes https://github.com/milekv/sql-atlas/releases/download/v0.4.0/sql-atlas-0.4.0.tgz analyze query.sql --format markdown --output sql-report.md
+```
+
+Supported dialects are `postgresql`, `mysql`, `oracle`, `sqlite`, `sqlserver`
+and `generic`. Supported output formats are `text`, `json` and `markdown`.
+
+CLI exit codes:
+
+- `0` - analysis completed and configured thresholds passed
+- `1` - a `--fail-on` or `--min-score` policy failed
+- `2` - invalid arguments, unreadable input or empty SQL
+
+Append `--help` to the package command for the complete command reference.
+
 Po uruchomieniu trybu developerskiego Vite pokaże lokalny adres aplikacji, najczęściej:
 
 ```text
@@ -247,10 +292,13 @@ Wersja `v0.3.0` obejmuje również funkcje z `v0.1.0` i `v0.2.0`.
 
 ### v0.4.0
 
-Planowany interfejs CLI:
+- Interfejs CLI dla plików i standard input
+- Raporty tekstowe, JSON i Markdown
+- Progi `--fail-on` i `--min-score` dla CI
+- Stabilne kody wyjścia i obsługa wielu plików
 
 ```bash
-npx sql-atlas analyze query.sql
+npx --yes https://github.com/milekv/sql-atlas/releases/download/v0.4.0/sql-atlas-0.4.0.tgz analyze query.sql
 ```
 
 ### v0.5.0
