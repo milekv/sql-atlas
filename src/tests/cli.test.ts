@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { resolve } from "node:path";
+import packageMetadata from "../../package.json";
 import { parseCliArgs } from "../cli/arguments";
 import { runCli } from "../cli/run";
 import type { CliIo } from "../cli/types";
@@ -37,7 +38,7 @@ describe("SQL Atlas CLI", () => {
 
     const version = createIo();
     expect(await runCli(["--version"], version.io)).toBe(0);
-    expect(version.output()).toBe("0.4.0\n");
+    expect(version.output()).toBe(`${packageMetadata.version}\n`);
   });
 
   it("parses useful analysis options", () => {

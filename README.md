@@ -16,7 +16,7 @@ SQL Atlas to lokalne, bezpieczne i działające bez AI narzędzie dla developer�
 
 **Demo:** [https://milekv.github.io/sql-atlas/](https://milekv.github.io/sql-atlas/)
 
-**Current version:** `v0.4.0`
+**Current version:** `v0.5.0`
 
 > Wklej SQL. Znajdź problemy. Zrozum dlaczego. Optymalizuj świadomie.
 
@@ -208,6 +208,43 @@ CLI exit codes:
 
 Append `--help` to the package command for the complete command reference.
 
+## GitHub Action
+
+SQL Atlas can analyze SQL files in pull requests without sending their content
+to an external service. Add this workflow to a repository:
+
+```yaml
+name: SQL review
+
+on:
+  pull_request:
+    paths:
+      - "**/*.sql"
+
+permissions:
+  contents: read
+
+jobs:
+  sql-atlas:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: milekv/sql-atlas@v0.5.0
+        with:
+          paths: |
+            migrations/**/*.sql
+            schema/**/*.sql
+          dialect: postgresql
+          fail-on: critical
+          min-score: 60
+```
+
+The action adds file annotations for findings, writes a Markdown report to the
+job summary and exposes `files`, `findings` and `lowest-score` outputs. Empty
+files are skipped with a warning. The step fails with exit code `1` only when a
+configured policy is violated, and with exit code `2` for configuration or
+input errors.
+
 Po uruchomieniu trybu developerskiego Vite pokaże lokalny adres aplikacji, najczęściej:
 
 ```text
@@ -304,6 +341,10 @@ npx --yes https://github.com/milekv/sql-atlas/releases/download/v0.4.0/sql-atlas
 ### v0.5.0
 
 - GitHub Action do sprawdzania plików SQL w repozytoriach
+- Obsługa globów i wielu plików
+- Adnotacje plików oraz raport w podsumowaniu joba
+- Progi ważności i minimalnego wyniku
+- Wyjścia `files`, `findings` i `lowest-score`
 
 ### Future
 

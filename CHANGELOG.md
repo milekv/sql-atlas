@@ -1,5 +1,21 @@
 # Changelog
 
+## 0.5.0 - 2026-08-13
+
+### GitHub Action
+
+- Analyze SQL files selected with newline-separated glob patterns.
+- Add pull request annotations with file and line information when available.
+- Write the full Markdown analysis to the job summary.
+- Expose file count, finding count and lowest score as action outputs.
+- Enforce severity and minimum score policies without external services.
+- Run as a bundled Node.js 24 action without downloading dependencies at runtime.
+
+### Packaging
+
+- Move browser build dependencies out of the CLI package runtime dependencies.
+- Keep the CLI release package self-contained and dependency-free at runtime.
+
 ## 0.4.0 - 2026-08-13
 
 ### CLI
