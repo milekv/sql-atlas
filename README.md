@@ -49,7 +49,7 @@ SQL Atlas nie jest tylko linterem i nie jest tylko dokumentacją. Wykrywa proble
 | **Command Palette / Paleta komend** | Globalna paleta `Ctrl+K` / `Cmd+K` do nawigacji, ładowania próbek, analizy SQL, zmiany języka, zmiany motywu i eksportu raportu. |
 | **Try Demo / Demo na start** | Jednym kliknięciem ładuje przykładowe zapytanie z `SELECT *`, `LOWER(email)` i `ORDER BY` bez `LIMIT`, a następnie uruchamia analizę. |
 | **EXPLAIN Visualizer** | Lokalny parser planów PostgreSQL `EXPLAIN (ANALYZE, BUFFERS, FORMAT JSON)`. Pokazuje czasy, bufory, drzewo operatorów, błędy estymacji, kosztowne skany, filtrowanie i pracę na dysku. |
-| **Schema Visualizer** | Moduł planowany. Obecnie przygotowany jako placeholder pod przyszłe diagramy schematu i relacji między tabelami. |
+| **Schema Visualizer** | Lokalny parser PostgreSQL `CREATE TABLE`. Pokazuje tabele, kolumny, typy, klucze główne, ograniczenia i relacje foreign key, w tym odwołania do brakujących tabel. |
 
 <a id="dwujezyczny-interfejs"></a>
 
@@ -237,9 +237,9 @@ public/
 
 ### v0.3.0
 
-- Schema Visualizer
-- Parser `CREATE TABLE`
-- Wizualizacja relacji między tabelami
+- Działający Schema Visualizer
+- Parser PostgreSQL `CREATE TABLE`
+- Wizualizacja kolumn, kluczy i relacji między tabelami
 
 ### v0.4.0
 

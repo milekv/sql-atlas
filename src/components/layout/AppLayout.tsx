@@ -7,12 +7,12 @@ interface AppLayoutProps {
 }
 
 export const AppLayout = ({ children }: AppLayoutProps) => (
-  <div className="min-h-screen bg-atlas-bg text-atlas-text">
-    <div className="grid min-h-screen lg:grid-cols-[280px_1fr]">
+  <div className="min-h-screen w-full overflow-x-hidden bg-atlas-bg text-atlas-text">
+    <div className="grid min-h-screen min-w-0 grid-cols-[minmax(0,1fr)] lg:grid-cols-[280px_minmax(0,1fr)]">
       <Sidebar />
-      <div className="min-w-0">
+      <div className="min-w-0 max-w-full">
         <Topbar />
-        <main className="mx-auto w-full max-w-[1500px] px-4 py-6 md:px-6 lg:px-8">
+        <main className="mx-auto w-full min-w-0 max-w-[1500px] px-4 py-6 md:px-6 lg:px-8">
           {children}
         </main>
       </div>

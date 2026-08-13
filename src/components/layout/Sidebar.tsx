@@ -7,7 +7,7 @@ export const Sidebar = () => {
   const { page, setPage, t } = useApp();
 
   return (
-    <aside className="border-r border-atlas-border bg-atlas-panel/95 lg:sticky lg:top-0 lg:h-screen">
+    <aside className="min-w-0 max-w-full border-r border-atlas-border bg-atlas-panel/95 lg:sticky lg:top-0 lg:h-screen">
       <div className="flex h-16 items-center gap-3 border-b border-atlas-border px-4">
         <div className="flex h-9 w-9 items-center justify-center rounded-md border border-atlas-cyan/50 bg-atlas-cyan/15">
           <Database size={19} />
