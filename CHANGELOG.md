@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.5.1 - 2026-08-13
+
+### Packaging
+
+- Preserve the `sql-atlas` executable when publishing through the npm registry.
+- Normalize npm package metadata before the first registry release.
+
 ## 0.5.0 - 2026-08-13
 
 ### GitHub Action
