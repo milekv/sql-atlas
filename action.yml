@@ -19,6 +19,14 @@ inputs:
     description: Fail when any SQL file scores below this value. Use 0 to disable.
     required: false
     default: "0"
+  config:
+    description: Optional path to a SQL Atlas JSON configuration file.
+    required: false
+    default: ""
+  ignore:
+    description: Comma-separated rule IDs to ignore for this run.
+    required: false
+    default: ""
 
 outputs:
   files:

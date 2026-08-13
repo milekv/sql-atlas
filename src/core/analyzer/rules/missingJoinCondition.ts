@@ -11,9 +11,9 @@ export const missingJoinConditionRule: AnalyzerRule = {
       context,
       /\bfrom\s+[\w."]+(?:\s+\w+)?\s*,\s*[\w."]+(?:\s+\w+)?/i,
     );
-    const hasJoin = /\bjoin\b/i.test(context.sql) && !/\bcross\s+join\b/i.test(context.sql);
+    const hasJoin = /\bjoin\b/i.test(context.maskedSql) && !/\bcross\s+join\b/i.test(context.maskedSql);
     const lacksJoinPredicate =
-      hasJoin && !/\bon\b|\busing\s*\(/i.test(context.sql);
+      hasJoin && !/\bon\b|\busing\s*\(|\bnatural\s+(?:inner\s+|left\s+|right\s+|full\s+)?join\b/i.test(context.maskedSql);
 
     if (!commaJoin && !lacksJoinPredicate) {
       return null;

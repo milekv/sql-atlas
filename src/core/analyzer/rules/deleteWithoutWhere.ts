@@ -7,10 +7,11 @@ export const deleteWithoutWhereRule: AnalyzerRule = {
   passedKey: "rule.delete-without-where.passed",
   category: "safety",
   analyze: (context) => {
-    const statement = context.statements.find(
+    const statementIndex = context.maskedStatements.findIndex(
       (candidate) =>
         /^\s*delete\s+from\b/i.test(candidate) && !/\bwhere\b/i.test(candidate),
     );
+    const statement = statementIndex < 0 ? undefined : context.statements[statementIndex];
 
     if (!statement) {
       return null;

@@ -10,7 +10,7 @@ export const functionInWhereRule: AnalyzerRule = {
   passedKey: "rule.function-in-where.passed",
   category: "indexing",
   analyze: (context) => {
-    const whereClause = getWhereClause(context.sql);
+    const whereClause = getWhereClause(context);
     const fragment = whereClause?.match(functionOnColumnPattern)?.[0];
 
     if (!fragment) {

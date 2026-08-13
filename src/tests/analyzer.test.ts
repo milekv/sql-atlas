@@ -124,8 +124,20 @@ describe("SQL analyzer rules", () => {
 
   it("detects NOT IN NULL risk", () => {
     expectRule(
-      "SELECT id FROM users WHERE id NOT IN (SELECT user_id FROM bans);",
+      "SELECT id FROM users WHERE status NOT IN ('active', NULL);",
       "not-in-null-risk",
+    );
+  });
+
+  it("does not report the generic NOT IN rule for a subquery", () => {
+    const result = analyzeQuery(
+      "SELECT id FROM users WHERE id NOT IN (SELECT user_id FROM bans);",
+    );
+    expect(result.findings.map((finding) => finding.id)).not.toContain(
+      "not-in-null-risk",
+    );
+    expect(result.findings.map((finding) => finding.id)).toContain(
+      "nullable-not-in",
     );
   });
 
@@ -168,5 +180,18 @@ describe("SQL analyzer rules", () => {
       "select-star",
     );
     expect(result.passedChecks.map((check) => check.id)).toContain("select-star");
+  });
+
+  it("supports API and inline rule ignores without reporting disabled checks as passed", () => {
+    const apiIgnored = analyzeQuery("SELECT * FROM customers;", "postgresql", {
+      ignoreRules: ["select-star"],
+    });
+    expect(apiIgnored.findings.map((finding) => finding.id)).not.toContain("select-star");
+    expect(apiIgnored.passedChecks.map((finding) => finding.id)).not.toContain("select-star");
+
+    const inlineIgnored = analyzeQuery(
+      "-- sql-atlas-ignore select-star, unbounded-select\nSELECT * FROM customers;",
+    );
+    expect(inlineIgnored.findings).toEqual([]);
   });
 });

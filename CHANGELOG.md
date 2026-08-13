@@ -1,5 +1,20 @@
 # Changelog
 
+## Unreleased
+
+### Analysis accuracy
+
+- Mask PostgreSQL strings, nested comments and dollar-quoted bodies before structural analysis.
+- Keep semicolons inside PostgreSQL function bodies from splitting statements.
+- Avoid duplicate findings for `NOT IN` subqueries.
+- Recognize intentional `NATURAL JOIN` syntax and commas nested in `GROUP BY` expressions.
+
+### Configuration
+
+- Add validated JSON rule configuration for the CLI and GitHub Action.
+- Add command, workflow and SQL comment based rule ignores.
+- Exclude disabled rules from findings, scores and passed checks.
+
 ## 0.5.1 - 2026-08-13
 
 ### Packaging

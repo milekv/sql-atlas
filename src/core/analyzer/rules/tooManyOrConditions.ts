@@ -7,7 +7,7 @@ export const tooManyOrConditionsRule: AnalyzerRule = {
   passedKey: "rule.too-many-or-conditions.passed",
   category: "performance",
   analyze: (context) => {
-    const whereClause = getWhereClause(context.sql);
+    const whereClause = getWhereClause(context);
 
     if (!whereClause || countMatches(whereClause, /\bor\b/gi) < 3) {
       return null;

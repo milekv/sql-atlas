@@ -7,7 +7,7 @@ export const groupByManyColumnsRule: AnalyzerRule = {
   passedKey: "rule.group-by-many-columns.passed",
   category: "performance",
   analyze: (context) => {
-    const clause = getClause(context.sql, "group by");
+    const clause = getClause(context, "group by");
 
     if (!clause || splitColumns(clause).length < 4) {
       return null;

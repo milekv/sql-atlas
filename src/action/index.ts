@@ -1,6 +1,11 @@
 import { appendFile, glob, readFile } from "node:fs/promises";
-import { resolve } from "node:path";
+import { isAbsolute, relative, resolve } from "node:path";
 import { analyzeQuery } from "../core/analyzer/analyzeQuery";
+import {
+  disabledRules,
+  parseAnalyzerConfiguration,
+  parseRuleList,
+} from "../core/analyzer/configuration";
 import type { AnalyzerSeverity, SqlDialect } from "../core/analyzer/types";
 import { createTranslator } from "../i18n/i18n";
 import { createCliReport, type CliAnalysis } from "../cli/report";
@@ -24,6 +29,15 @@ const input = (name: string, fallback: string): string =>
 
 const emit = (line: string): void => {
   process.stdout.write(`${line}\n`);
+};
+
+const workspacePath = (workspace: string, path: string): string => {
+  const absolute = resolve(workspace, path);
+  const relativePath = relative(workspace, absolute);
+  if (relativePath.startsWith("..") || isAbsolute(relativePath)) {
+    throw new Error(`Path must stay inside the GitHub workspace: ${path}.`);
+  }
+  return absolute;
 };
 
 const lineForFragment = (sql: string, fragment: string | undefined): number | undefined => {
@@ -57,6 +71,15 @@ const run = async (): Promise<void> => {
   if (!Number.isInteger(minScore) || minScore < 0 || minScore > 100) {
     throw new Error("min-score must be an integer from 0 to 100.");
   }
+  const configPath = input("config", "");
+  const configuredIgnores = configPath
+    ? disabledRules(parseAnalyzerConfiguration(
+      await readFile(workspacePath(workspace, configPath), "utf8"),
+      configPath,
+    ))
+    : [];
+  const inputIgnores = parseRuleList(input("ignore", ""), "ignore input");
+  const ignoreRules = [...new Set([...configuredIgnores, ...inputIgnores])];
 
   const matched = new Set<string>();
   for (const pattern of patterns) {
@@ -72,7 +95,7 @@ const run = async (): Promise<void> => {
 
   const analyses: CliAnalysis[] = [];
   for (const file of files) {
-    const absolute = resolve(workspace, file);
+    const absolute = workspacePath(workspace, file);
     const sql = await readFile(absolute, "utf8");
     if (sql.trim().length === 0) {
       emit(annotation({
@@ -83,7 +106,7 @@ const run = async (): Promise<void> => {
       }));
       continue;
     }
-    const result = analyzeQuery(sql, dialect);
+    const result = analyzeQuery(sql, dialect, { ignoreRules });
     analyses.push({ input: { source: file, sql }, result });
     for (const finding of result.findings) {
       emit(annotation({

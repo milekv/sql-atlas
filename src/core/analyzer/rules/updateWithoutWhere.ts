@@ -7,10 +7,11 @@ export const updateWithoutWhereRule: AnalyzerRule = {
   passedKey: "rule.update-without-where.passed",
   category: "safety",
   analyze: (context) => {
-    const statement = context.statements.find(
+    const statementIndex = context.maskedStatements.findIndex(
       (candidate) =>
         /^\s*update\b/i.test(candidate) && !/\bwhere\b/i.test(candidate),
     );
+    const statement = statementIndex < 0 ? undefined : context.statements[statementIndex];
 
     if (!statement) {
       return null;

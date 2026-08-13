@@ -7,12 +7,12 @@ export const orderByWithoutLimitRule: AnalyzerRule = {
   passedKey: "rule.order-by-without-limit.passed",
   category: "performance",
   analyze: (context) => {
-    if (!/\border\s+by\b/i.test(context.sql)) {
+    if (!/\border\s+by\b/i.test(context.maskedSql)) {
       return null;
     }
 
     const hasLimit = /\blimit\b|\bfetch\s+first\b|\btop\s+\d+\b/i.test(
-      context.sql,
+      context.maskedSql,
     );
 
     if (hasLimit) {
