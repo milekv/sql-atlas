@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { resolve } from "node:path";
 import { parseCliArgs } from "../cli/arguments";
 import { runCli } from "../cli/run";
 import type { CliIo } from "../cli/types";
@@ -8,15 +9,15 @@ const createIo = (files: Record<string, string> = {}, stdin = "") => {
   let stderr = "";
   const written = new Map<string, string>();
   const io: CliIo = {
-    cwd: "C:/project",
+    cwd: resolve("/project"),
     readFile: async (path) => {
-      const value = files[path.replace(/\\/g, "/")];
+      const value = files[path];
       if (value === undefined) throw new Error(`Cannot read ${path}`);
       return value;
     },
     readStdin: async () => stdin,
     writeFile: async (path, content) => {
-      written.set(path.replace(/\\/g, "/"), content);
+      written.set(path, content);
     },
     writeStdout: (content) => {
       stdout += content;
@@ -72,8 +73,8 @@ describe("SQL Atlas CLI", () => {
 
   it("returns stable JSON for multiple files", async () => {
     const context = createIo({
-      "C:/project/a.sql": "SELECT * FROM customers;",
-      "C:/project/b.sql": "DELETE FROM sessions;",
+      [resolve("/project/a.sql")]: "SELECT * FROM customers;",
+      [resolve("/project/b.sql")]: "DELETE FROM sessions;",
     });
     expect(
       await runCli(["analyze", "a.sql", "b.sql", "--format", "json"], context.io),
@@ -88,7 +89,9 @@ describe("SQL Atlas CLI", () => {
   });
 
   it("uses exit code 1 when a severity policy fails", async () => {
-    const context = createIo({ "C:/project/danger.sql": "DELETE FROM sessions;" });
+    const context = createIo({
+      [resolve("/project/danger.sql")]: "DELETE FROM sessions;",
+    });
     expect(
       await runCli(
         ["analyze", "danger.sql", "--fail-on", "critical"],
@@ -105,7 +108,7 @@ describe("SQL Atlas CLI", () => {
 
   it("writes Markdown to the requested output file", async () => {
     const context = createIo({
-      "C:/project/query.sql": "SELECT id FROM users WHERE id = 1;",
+      [resolve("/project/query.sql")]: "SELECT id FROM users WHERE id = 1;",
     });
     expect(
       await runCli(
@@ -114,7 +117,7 @@ describe("SQL Atlas CLI", () => {
       ),
     ).toBe(0);
     expect(context.output()).toBe("");
-    expect(context.written.get("C:/project/report.md")).toContain(
+    expect(context.written.get(resolve("/project/report.md"))).toContain(
       "# SQL Atlas Optimization Report",
     );
   });
