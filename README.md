@@ -16,6 +16,8 @@ SQL Atlas to lokalne, bezpieczne i działające bez AI narzędzie dla developer�
 
 **Demo:** [https://milekv.github.io/sql-atlas/](https://milekv.github.io/sql-atlas/)
 
+**Current version:** `v0.3.0`
+
 > Wklej SQL. Znajdź problemy. Zrozum dlaczego. Optymalizuj świadomie.
 
 ## Czym jest SQL Atlas?
@@ -240,6 +242,8 @@ public/
 - Działający Schema Visualizer
 - Parser PostgreSQL `CREATE TABLE`
 - Wizualizacja kolumn, kluczy i relacji między tabelami
+
+Wersja `v0.3.0` obejmuje również funkcje z `v0.1.0` i `v0.2.0`.
 
 ### v0.4.0
 

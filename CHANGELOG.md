@@ -1,22 +1,43 @@
 # Changelog
 
-## v0.1.0 - Initial Public Release
+## 0.3.0 - 2026-08-13
 
-SQL Atlas v0.1.0 introduces the first public version of the local-first, no-AI SQL knowledge base and performance toolkit.
+First tagged release of SQL Atlas as a usable local SQL analysis toolkit.
 
-### Added
+### Query analysis
 
-- Rule-based Query Analyzer with severity groups, score breakdown, top recommendations, detected fragments, passed checks, and formatted SQL preview.
-- Deterministic Index Advisor for WHERE, JOIN, ORDER BY, GROUP BY, composite, and functional index candidates.
-- SQL Knowledge Base with bilingual English/Polish documentation topics.
-- Anti-Patterns Library with bad examples, better examples, explanations, suggested fixes, and related learning topics.
-- Dialect Compare for PostgreSQL, MySQL, Oracle, SQLite, and SQL Server.
-- Markdown report export for GitHub-friendly query analysis summaries.
-- Local-first privacy model: no AI, no backend, no tracking, no server uploads.
-- GitHub Actions CI and GitHub Pages deployment workflow.
-- Real browser screenshots for README and project presentation.
+- Detect common SQL performance and safety problems with deterministic rules.
+- Suggest indexes for filters, joins, grouping and ordering.
+- Export analysis results as Markdown.
+- Compare PostgreSQL, MySQL, Oracle, SQLite and SQL Server syntax.
 
-### Notes
+### PostgreSQL EXPLAIN
 
-- EXPLAIN Visualizer and Schema Visualizer are prepared as typed placeholder modules for future releases.
-- Rule-based static analysis is educational and should be verified with real database data and EXPLAIN ANALYZE.
+- Parse `EXPLAIN (ANALYZE, BUFFERS, FORMAT JSON)` output locally.
+- Display execution metrics and the plan tree.
+- Flag estimation errors, sequential scans, costly sorts and disk usage.
+
+### PostgreSQL schemas
+
+- Parse `CREATE TABLE` statements locally.
+- Display columns, data types, primary keys and unique constraints.
+- Build foreign key relationships between tables.
+- Warn about references to tables missing from the pasted schema.
+
+### Project
+
+- English and Polish interface.
+- Local browser processing with no backend or tracking.
+- Automated tests and GitHub Pages deployment.
+
+## 0.2.0
+
+- Added the PostgreSQL EXPLAIN JSON parser and visual plan tree.
+- Added execution time, cost, row estimate and buffer metrics.
+- Added deterministic warnings for expensive plan operations.
+
+## 0.1.0
+
+- Added the query analyzer, index advisor and Markdown report export.
+- Added the SQL knowledge base, anti-pattern library and dialect comparison.
+- Added English and Polish UI, automated tests and GitHub Pages deployment.
