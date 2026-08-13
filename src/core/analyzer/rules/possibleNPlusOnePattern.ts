@@ -7,9 +7,12 @@ export const possibleNPlusOnePatternRule: AnalyzerRule = {
   passedKey: "rule.possible-n-plus-one-pattern.passed",
   category: "performance",
   analyze: (context) => {
-    const fragment = context.sql.match(
+    const match = context.maskedSql.match(
       /\bwhere\s+[\w."]*id\s*=\s*(?::\w+|\$\d+|\?)[\s\S]*\blimit\s+1\b/i,
-    )?.[0];
+    );
+    const fragment = match?.index === undefined
+      ? undefined
+      : context.sql.slice(match.index, match.index + match[0].length);
 
     if (!fragment) {
       return null;

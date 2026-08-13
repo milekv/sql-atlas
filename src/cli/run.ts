@@ -1,6 +1,10 @@
 import { resolve } from "node:path";
 import packageMetadata from "../../package.json";
 import { analyzeQuery } from "../core/analyzer/analyzeQuery";
+import {
+  disabledRules,
+  parseAnalyzerConfiguration,
+} from "../core/analyzer/configuration";
 import type { AnalyzerSeverity } from "../core/analyzer/types";
 import { parseCliArgs } from "./arguments";
 import { createCliReport, type CliAnalysis } from "./report";
@@ -22,6 +26,8 @@ Options:
   -o, --output <file>    Write the report to a file
       --fail-on <level>  Exit 1 for critical, warning or info findings
       --min-score <n>    Exit 1 when any score is below n (0-100)
+      --config <file>    Read rule settings from a JSON file
+      --ignore <rules>   Ignore comma-separated rule IDs
   -h, --help             Show help
   -v, --version          Show version
 
@@ -82,10 +88,17 @@ export const runCli = async (args: string[], io: CliIo): Promise<number> => {
       return 0;
     }
 
+    const configuredIgnores = parsed.config === undefined
+      ? []
+      : disabledRules(parseAnalyzerConfiguration(
+        await io.readFile(resolve(io.cwd, parsed.config)),
+        parsed.config,
+      ));
+    const ignoreRules = [...new Set([...configuredIgnores, ...parsed.ignoreRules])];
     const inputs = await readInputs(parsed, io);
     const analyses = inputs.map((input) => ({
       input,
-      result: analyzeQuery(input.sql, parsed.dialect),
+      result: analyzeQuery(input.sql, parsed.dialect, { ignoreRules }),
     }));
     const report = createCliReport(parsed.format, analyses);
     if (parsed.output === undefined) io.writeStdout(report);

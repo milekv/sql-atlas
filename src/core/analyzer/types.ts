@@ -48,9 +48,16 @@ export type RuleId =
 
 export interface AnalyzerContext {
   sql: string;
+  commentMaskedSql: string;
+  maskedSql: string;
   normalizedSql: string;
   statements: string[];
+  maskedStatements: string[];
   dialect: SqlDialect;
+}
+
+export interface AnalyzerOptions {
+  ignoreRules?: readonly RuleId[];
 }
 
 export interface AnalyzerFinding {

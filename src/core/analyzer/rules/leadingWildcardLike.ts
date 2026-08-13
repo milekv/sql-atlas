@@ -7,7 +7,7 @@ export const leadingWildcardLikeRule: AnalyzerRule = {
   passedKey: "rule.leading-wildcard-like.passed",
   category: "performance",
   analyze: (context) => {
-    const fragment = firstMatch(context, /\blike\s+(['"])%[^'"]*\1/i);
+    const fragment = firstMatch(context, /\blike\s+(['"])%[^'"]*\1/i, "comments");
 
     if (!fragment) {
       return null;

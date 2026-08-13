@@ -7,7 +7,7 @@ export const unboundedSelectRule: AnalyzerRule = {
   passedKey: "rule.unbounded-select.passed",
   category: "performance",
   analyze: (context) => {
-    const statement = context.statements.find((candidate) => {
+    const statementIndex = context.maskedStatements.findIndex((candidate) => {
       if (!/^\s*select\b/i.test(candidate) || !/\bfrom\b/i.test(candidate)) {
         return false;
       }
@@ -16,6 +16,7 @@ export const unboundedSelectRule: AnalyzerRule = {
         candidate,
       );
     });
+    const statement = statementIndex < 0 ? undefined : context.statements[statementIndex];
 
     if (!statement) {
       return null;

@@ -1,0 +1,6 @@
+{
+  "rules": {
+    "distinct-overuse": "off",
+    "possible-n-plus-one-pattern": "off"
+  }
+}

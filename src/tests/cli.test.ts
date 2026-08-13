@@ -54,6 +54,8 @@ describe("SQL Atlas CLI", () => {
         "warning",
         "--min-score",
         "80",
+        "--ignore",
+        "select-star,unbounded-select",
       ]),
     ).toMatchObject({
       dialect: "sqlite",
@@ -61,6 +63,7 @@ describe("SQL Atlas CLI", () => {
       files: ["query.sql"],
       format: "json",
       minScore: 80,
+      ignoreRules: ["select-star", "unbounded-select"],
     });
   });
 
@@ -131,5 +134,44 @@ describe("SQL Atlas CLI", () => {
     const empty = createIo({}, "   ");
     expect(await runCli(["analyze"], empty.io)).toBe(2);
     expect(empty.error()).toContain("SQL input is empty");
+  });
+
+  it("loads rule configuration and supports explicit ignores", async () => {
+    const context = createIo({
+      [resolve("/project/query.sql")]: "SELECT * FROM customers;",
+      [resolve("/project/sql-atlas.json")]: JSON.stringify({
+        rules: { "select-star": "off" },
+      }),
+    });
+    expect(
+      await runCli([
+        "analyze",
+        "query.sql",
+        "--config",
+        "sql-atlas.json",
+        "--ignore",
+        "unbounded-select",
+        "--format",
+        "json",
+      ], context.io),
+    ).toBe(0);
+    expect(JSON.parse(context.output()).results[0].findings).toEqual([]);
+  });
+
+  it("rejects unknown configured and ignored rules", async () => {
+    const ignored = createIo({}, "SELECT 1;");
+    expect(await runCli(["analyze", "--ignore", "made-up"], ignored.io)).toBe(2);
+    expect(ignored.error()).toContain("unknown rule made-up");
+
+    const configured = createIo({
+      [resolve("/project/query.sql")]: "SELECT 1;",
+      [resolve("/project/sql-atlas.json")]: JSON.stringify({
+        rules: { "made-up": "off" },
+      }),
+    });
+    expect(
+      await runCli(["analyze", "query.sql", "--config", "sql-atlas.json"], configured.io),
+    ).toBe(2);
+    expect(configured.error()).toContain("unknown rule made-up");
   });
 });

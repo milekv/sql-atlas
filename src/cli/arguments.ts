@@ -1,4 +1,5 @@
 import type { SqlDialect } from "../core/analyzer/types";
+import { parseRuleList } from "../core/analyzer/configuration";
 import {
   cliFormats,
   failureSeverities,
@@ -39,6 +40,7 @@ export const parseCliArgs = (args: string[]): ParsedCommand => {
     dialect: "postgresql",
     files: [],
     format: "text",
+    ignoreRules: [],
   };
 
   for (let index = 1; index < args.length; index += 1) {
@@ -69,6 +71,15 @@ export const parseCliArgs = (args: string[]): ParsedCommand => {
         throw new Error("--min-score must be an integer from 0 to 100.");
       }
       options.minScore = value;
+      index += 1;
+    } else if (argument === "--config") {
+      options.config = takeValue(args, index, argument);
+      index += 1;
+    } else if (argument === "--ignore") {
+      options.ignoreRules.push(
+        ...parseRuleList(takeValue(args, index, argument), "--ignore"),
+      );
+      options.ignoreRules = [...new Set(options.ignoreRules)];
       index += 1;
     } else if (argument.startsWith("-") && argument !== "-") {
       throw new Error(`Unknown option: ${argument}.`);

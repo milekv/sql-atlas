@@ -10,6 +10,7 @@ export const implicitConversionRiskRule: AnalyzerRule = {
     const fragment = firstMatch(
       context,
       /\b[\w."]*(?:id|count|amount|price|age|number|total|quantity)[\w."]*\s*=\s*'\d+(?:\.\d+)?'/i,
+      "comments",
     );
 
     if (!fragment) {

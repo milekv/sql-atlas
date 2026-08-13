@@ -216,6 +216,37 @@ echo "SELECT * FROM customers;" | npx --yes sql-atlas@0.5.1 analyze -
 npx --yes sql-atlas@0.5.1 analyze query.sql --format markdown --output sql-report.md
 ```
 
+Disable rules for one command:
+
+```bash
+npx --yes sql-atlas@0.5.1 analyze query.sql \
+  --ignore distinct-overuse,possible-n-plus-one-pattern
+```
+
+For a shared repository policy, create a JSON file such as `sql-atlas.json`:
+
+```json
+{
+  "rules": {
+    "distinct-overuse": "off",
+    "possible-n-plus-one-pattern": "off"
+  }
+}
+```
+
+Then pass `--config sql-atlas.json`. Unknown rule IDs and invalid values are
+reported as configuration errors instead of being ignored silently.
+
+A SQL file can suppress rules locally without changing repository policy:
+
+```sql
+-- sql-atlas-ignore select-star, unbounded-select
+SELECT * FROM small_reference_table;
+```
+
+The directive applies to the file. Disabled rules are excluded from findings,
+scores and passed checks.
+
 Supported dialects are `postgresql`, `mysql`, `oracle`, `sqlite`, `sqlserver`
 and `generic`. Supported output formats are `text`, `json` and `markdown`.
 
@@ -263,6 +294,20 @@ job summary and exposes `files`, `findings` and `lowest-score` outputs. Empty
 files are skipped with a warning. The step fails with exit code `1` only when a
 configured policy is violated, and with exit code `2` for configuration or
 input errors.
+
+`config` is an optional repository-relative JSON configuration path. `ignore`
+accepts comma-separated rule IDs and can be used for a workflow-specific
+override. SQL comments can use the same `sql-atlas-ignore` directive as the CLI.
+
+```yaml
+with:
+  config: sql-atlas.json
+  ignore: distinct-overuse
+```
+
+The PostgreSQL scanner understands single-quoted strings, escaped quotes,
+nested block comments and dollar-quoted function bodies. This prevents SQL
+keywords and semicolons inside those regions from producing structural findings.
 
 Po uruchomieniu trybu developerskiego Vite pokaże lokalny adres aplikacji, najczęściej:
 

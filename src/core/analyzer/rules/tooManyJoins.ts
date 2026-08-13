@@ -7,7 +7,7 @@ export const tooManyJoinsRule: AnalyzerRule = {
   passedKey: "rule.too-many-joins.passed",
   category: "performance",
   analyze: (context) => {
-    const joinCount = countMatches(context.sql, /\bjoin\b/gi);
+    const joinCount = countMatches(context.maskedSql, /\bjoin\b/gi);
 
     if (joinCount < 5) {
       return null;
