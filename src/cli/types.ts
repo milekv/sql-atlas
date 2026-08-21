@@ -1,6 +1,6 @@
 import type { RuleId, SqlDialect } from "../core/analyzer/types";
 
-export const cliFormats = ["text", "json", "markdown"] as const;
+export const cliFormats = ["text", "json", "markdown", "sarif"] as const;
 export type CliFormat = (typeof cliFormats)[number];
 
 export const failureSeverities = ["critical", "warning", "info"] as const;

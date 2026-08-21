@@ -22,7 +22,7 @@ Usage:
 
 Options:
   -d, --dialect <name>   postgresql, mysql, oracle, sqlite, sqlserver, generic
-  -f, --format <format>  text, json, markdown (default: text)
+  -f, --format <format>  text, json, markdown, sarif (default: text)
   -o, --output <file>    Write the report to a file
       --fail-on <level>  Exit 1 for critical, warning or info findings
       --min-score <n>    Exit 1 when any score is below n (0-100)
