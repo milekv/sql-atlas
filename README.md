@@ -248,7 +248,20 @@ The directive applies to the file. Disabled rules are excluded from findings,
 scores and passed checks.
 
 Supported dialects are `postgresql`, `mysql`, `oracle`, `sqlite`, `sqlserver`
-and `generic`. Supported output formats are `text`, `json` and `markdown`.
+and `generic`. Supported output formats are `text`, `json`, `markdown` and
+SARIF 2.1.0.
+
+Generate a SARIF file for GitHub Code Scanning or another compatible viewer:
+
+```bash
+npx --yes sql-atlas@0.6.0 analyze migrations/**/*.sql \
+  --format sarif \
+  --output sql-atlas.sarif
+```
+
+The report includes stable rule IDs, severity levels and source locations. It
+can be uploaded with `github/codeql-action/upload-sarif` in repositories where
+GitHub Code Scanning is enabled.
 
 CLI exit codes:
 

@@ -126,6 +126,35 @@ describe("SQL Atlas CLI", () => {
     );
   });
 
+  it("writes SARIF 2.1.0 with rules and source locations", async () => {
+    const context = createIo({
+      [resolve("/project/query.sql")]: "SELECT id\nFROM users\nORDER BY random();",
+    });
+    expect(
+      await runCli(
+        ["analyze", "query.sql", "--format", "sarif", "--output", "results.sarif"],
+        context.io,
+      ),
+    ).toBe(0);
+    const report = JSON.parse(context.written.get(resolve("/project/results.sarif"))!);
+    expect(report.version).toBe("2.1.0");
+    expect(report.runs[0].tool.driver.name).toBe("SQL Atlas");
+    expect(report.runs[0].tool.driver.rules).toEqual(
+      expect.arrayContaining([expect.objectContaining({ id: "order-by-random" })]),
+    );
+    expect(report.runs[0].results).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        ruleId: "order-by-random",
+        locations: [expect.objectContaining({
+          physicalLocation: expect.objectContaining({
+            artifactLocation: { uri: "query.sql" },
+            region: expect.objectContaining({ startLine: 3 }),
+          }),
+        })],
+      }),
+    ]));
+  });
+
   it("reports usage and input errors with exit code 2", async () => {
     const context = createIo({}, "");
     expect(await runCli(["analyze", "--dialect", "unknown"], context.io)).toBe(2);

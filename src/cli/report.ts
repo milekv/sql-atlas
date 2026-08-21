@@ -88,11 +88,67 @@ const markdownReport = (analyses: CliAnalysis[]): string =>
     )
     .join("\n---\n\n");
 
+const sarifLevel = (severity: "critical" | "warning" | "info") => {
+  if (severity === "critical") return "error";
+  if (severity === "warning") return "warning";
+  return "note";
+};
+
+const fragmentRegion = (sql: string, fragment?: string) => {
+  if (!fragment) return { startLine: 1, startColumn: 1 };
+  const offset = sql.toLowerCase().indexOf(fragment.toLowerCase());
+  if (offset < 0) return { startLine: 1, startColumn: 1 };
+  const before = sql.slice(0, offset);
+  const lines = before.split("\n");
+  return { startLine: lines.length, startColumn: lines.at(-1)!.length + 1 };
+};
+
+const sarifReport = (analyses: CliAnalysis[]): string => {
+  const findings = analyses.flatMap(({ input, result }) =>
+    result.findings.map((finding) => ({ input, finding })),
+  );
+  const uniqueRules = [...new Map(findings.map(({ finding }) => [
+    finding.id,
+    {
+      id: finding.id,
+      name: finding.id,
+      shortDescription: { text: t(finding.titleKey) },
+      fullDescription: { text: t(finding.descriptionKey) },
+      help: { text: t(finding.suggestionKey) },
+      defaultConfiguration: { level: sarifLevel(finding.severity) },
+      properties: { category: finding.category },
+    },
+  ])).values()];
+
+  return `${JSON.stringify({
+    version: "2.1.0",
+    $schema: "https://json.schemastore.org/sarif-2.1.0.json",
+    runs: [{
+      tool: { driver: {
+        name: "SQL Atlas",
+        informationUri: "https://github.com/milekv/sql-atlas",
+        rules: uniqueRules,
+      } },
+      results: findings.map(({ input, finding }) => ({
+        ruleId: finding.id,
+        level: sarifLevel(finding.severity),
+        message: { text: `${t(finding.titleKey)} ${t(finding.suggestionKey)}` },
+        locations: [{ physicalLocation: {
+          artifactLocation: { uri: input.source.replace(/\\/g, "/") },
+          region: fragmentRegion(input.sql, finding.detectedFragment),
+        } }],
+        properties: { category: finding.category, scoreImpact: finding.scoreImpact },
+      })),
+    }],
+  }, null, 2)}\n`;
+};
+
 export const createCliReport = (
   format: CliFormat,
   analyses: CliAnalysis[],
 ): string => {
   if (format === "json") return jsonReport(analyses);
   if (format === "markdown") return markdownReport(analyses);
+  if (format === "sarif") return sarifReport(analyses);
   return textReport(analyses);
 };
