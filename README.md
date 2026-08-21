@@ -10,7 +10,7 @@ send SQL to an external service.
 
 ```yaml
 - uses: actions/checkout@v7
-- uses: milekv/sql-atlas@v0.6.0
+- uses: milekv/sql-atlas@v0.7.0
   with:
     paths: "**/*.sql"
     dialect: postgresql
@@ -36,7 +36,7 @@ SQL Atlas to lokalne, bezpieczne i działające bez AI narzędzie dla developer�
 
 **Demo:** [https://milekv.github.io/sql-atlas/](https://milekv.github.io/sql-atlas/)
 
-**Current version:** `v0.6.0`
+**Current version:** `v0.7.0`
 
 > Wklej SQL. Znajdź problemy. Zrozum dlaczego. Optymalizuj świadomie.
 
@@ -189,7 +189,7 @@ The CLI runs the same deterministic analyzer from a terminal. It accepts one or
 more SQL files, or SQL piped through standard input. Analysis stays local.
 
 ```bash
-npx --yes sql-atlas@0.6.0 analyze query.sql
+npx --yes sql-atlas@0.7.0 analyze query.sql
 ```
 
 The package is published in the public npm registry and has zero runtime dependencies.
@@ -197,7 +197,7 @@ The package is published in the public npm registry and has zero runtime depende
 Analyze several files for PostgreSQL and return JSON:
 
 ```bash
-npx --yes sql-atlas@0.6.0 analyze migrations/001.sql migrations/002.sql \
+npx --yes sql-atlas@0.7.0 analyze migrations/001.sql migrations/002.sql \
   --dialect postgresql \
   --format json
 ```
@@ -206,20 +206,20 @@ Use a policy threshold in CI. Exit code `1` means the analysis completed but the
 configured policy failed:
 
 ```bash
-npx --yes sql-atlas@0.6.0 analyze schema.sql --fail-on critical --min-score 70
+npx --yes sql-atlas@0.7.0 analyze schema.sql --fail-on critical --min-score 70
 ```
 
 Pipe SQL from another command or export a Markdown report:
 
 ```bash
-echo "SELECT * FROM customers;" | npx --yes sql-atlas@0.6.0 analyze -
-npx --yes sql-atlas@0.6.0 analyze query.sql --format markdown --output sql-report.md
+echo "SELECT * FROM customers;" | npx --yes sql-atlas@0.7.0 analyze -
+npx --yes sql-atlas@0.7.0 analyze query.sql --format markdown --output sql-report.md
 ```
 
 Disable rules for one command:
 
 ```bash
-npx --yes sql-atlas@0.6.0 analyze query.sql \
+npx --yes sql-atlas@0.7.0 analyze query.sql \
   --ignore distinct-overuse,possible-n-plus-one-pattern
 ```
 
@@ -254,7 +254,7 @@ SARIF 2.1.0.
 Generate a SARIF file for GitHub Code Scanning or another compatible viewer:
 
 ```bash
-npx --yes sql-atlas@0.6.0 analyze migrations/**/*.sql \
+npx --yes sql-atlas@0.7.0 analyze migrations/**/*.sql \
   --format sarif \
   --output sql-atlas.sarif
 ```
@@ -292,7 +292,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
-      - uses: milekv/sql-atlas@v0.6.0
+      - uses: milekv/sql-atlas@v0.7.0
         with:
           paths: |
             migrations/**/*.sql
@@ -412,7 +412,7 @@ Wersja `v0.3.0` obejmuje również funkcje z `v0.1.0` i `v0.2.0`.
 - Stabilne kody wyjścia i obsługa wielu plików
 
 ```bash
-npx --yes sql-atlas@0.6.0 analyze query.sql
+npx --yes sql-atlas@0.7.0 analyze query.sql
 ```
 
 ### v0.5.0
