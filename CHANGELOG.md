@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+## 0.7.0 - 2026-08-21
+
+### Integrations
+
+- Add SARIF 2.1.0 CLI output for GitHub Code Scanning and compatible viewers.
+- Include stable rule IDs, severity levels and source locations in SARIF results.
+
 ### Analysis accuracy
 
 - Evaluate rules per SQL statement so one query cannot hide or trigger a finding in another query.
