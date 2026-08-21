@@ -1,6 +1,8 @@
 node_modules
 dist
 dist-cli
+vscode-extension/dist
+*.vsix
 *.tgz
 coverage
 .env
