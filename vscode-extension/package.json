@@ -1,0 +1,46 @@
+{
+  "name": "sql-atlas",
+  "displayName": "SQL Atlas",
+  "description": "Local SQL diagnostics for PostgreSQL, MySQL, SQLite, SQL Server and Oracle.",
+  "version": "0.1.0",
+  "publisher": "milekv",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/milekv/sql-atlas.git"
+  },
+  "homepage": "https://github.com/milekv/sql-atlas",
+  "bugs": "https://github.com/milekv/sql-atlas/issues",
+  "engines": {
+    "vscode": "^1.96.0"
+  },
+  "categories": ["Linters", "Programming Languages"],
+  "keywords": ["sql", "postgresql", "mysql", "sqlite", "database", "lint"],
+  "activationEvents": ["onLanguage:sql"],
+  "main": "./dist/extension.cjs",
+  "contributes": {
+    "configuration": {
+      "title": "SQL Atlas",
+      "properties": {
+        "sqlAtlas.dialect": {
+          "type": "string",
+          "enum": ["postgresql", "mysql", "sqlite", "sqlserver", "oracle", "generic"],
+          "default": "postgresql",
+          "description": "SQL dialect used for analysis."
+        },
+        "sqlAtlas.minimumSeverity": {
+          "type": "string",
+          "enum": ["critical", "warning", "info"],
+          "default": "info",
+          "description": "Lowest finding severity shown in the editor."
+        },
+        "sqlAtlas.ignoreRules": {
+          "type": "array",
+          "items": { "type": "string" },
+          "default": [],
+          "description": "SQL Atlas rule IDs disabled for this workspace."
+        }
+      }
+    }
+  }
+}

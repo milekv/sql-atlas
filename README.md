@@ -322,6 +322,22 @@ The PostgreSQL scanner understands single-quoted strings, escaped quotes,
 nested block comments and dollar-quoted function bodies. This prevents SQL
 keywords and semicolons inside those regions from producing structural findings.
 
+## VS Code extension
+
+The extension analyzes `.sql` files locally as you edit and reports findings
+through native VS Code diagnostics. It supports all SQL Atlas dialects,
+configurable minimum severity, workspace-level ignored rules and a quick fix
+for adding a file-level `sql-atlas-ignore` directive.
+
+Build an installable VSIX locally:
+
+```bash
+npm run package:vscode
+```
+
+The package is written to `sql-atlas-vscode.vsix`. No database connection or
+external analysis service is required.
+
 Po uruchomieniu trybu developerskiego Vite pokaże lokalny adres aplikacji, najczęściej:
 
 ```text
@@ -425,7 +441,6 @@ npx --yes sql-atlas@0.7.0 analyze query.sql
 
 ### Future
 
-- VS Code extension
 - Więcej reguł per dialekt
 - Więcej tematów w bazie wiedzy
 - Lokalna historia analiz
