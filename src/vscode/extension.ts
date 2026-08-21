@@ -8,9 +8,13 @@ import type {
   SqlDialect,
 } from "../core/analyzer/types";
 import { createTranslator } from "../i18n/i18n";
-import { findFragmentOffset, shouldShowSeverity } from "./diagnosticUtils";
+import { diagnosticSummary, findFragmentOffset, shouldShowSeverity } from "./diagnosticUtils";
 
 const collection = vscode.languages.createDiagnosticCollection("sql-atlas");
+const status = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 10);
+status.name = "SQL Atlas";
+status.command = "sqlAtlas.analyzeCurrentFile";
+status.tooltip = "Run SQL Atlas and show diagnostics";
 const t = createTranslator("en");
 const diagnosticSeverity = (
   severity: Exclude<AnalyzerSeverity, "success">,
@@ -56,21 +60,30 @@ const analyzeDocument = (document: vscode.TextDocument): void => {
   try {
     const { dialect, minimumSeverity, ignoreRules } = configurationFor(document);
     const result = analyzeQuery(document.getText(), dialect, { ignoreRules });
+    const diagnostics = result.findings
+      .filter((finding) => shouldShowSeverity(finding.severity, minimumSeverity))
+      .map((finding) => {
+        const diagnostic = new vscode.Diagnostic(
+          findingRange(document, finding),
+          `${t(finding.titleKey)} ${t(finding.suggestionKey)}`,
+          diagnosticSeverity(finding.severity),
+        );
+        diagnostic.source = "SQL Atlas";
+        diagnostic.code = finding.id;
+        return diagnostic;
+      });
     collection.set(
       document.uri,
-      result.findings
-        .filter((finding) => shouldShowSeverity(finding.severity, minimumSeverity))
-        .map((finding) => {
-          const diagnostic = new vscode.Diagnostic(
-            findingRange(document, finding),
-            `${t(finding.titleKey)} ${t(finding.suggestionKey)}`,
-            diagnosticSeverity(finding.severity),
-          );
-          diagnostic.source = "SQL Atlas";
-          diagnostic.code = finding.id;
-          return diagnostic;
-        }),
+      diagnostics,
     );
+    if (vscode.window.activeTextEditor?.document.uri.toString() === document.uri.toString()) {
+      const errors = diagnostics.filter((item) => item.severity === vscode.DiagnosticSeverity.Error).length;
+      const warnings = diagnostics.filter((item) => item.severity === vscode.DiagnosticSeverity.Warning).length;
+      const info = diagnostics.length - errors - warnings;
+      status.text = diagnostics.length === 0 ? "$(pass-filled) SQL Atlas: clean" : `$(warning) ${diagnosticSummary(errors, warnings, info)}`;
+      status.backgroundColor = errors > 0 ? new vscode.ThemeColor("statusBarItem.errorBackground") : undefined;
+      status.show();
+    }
   } catch (error) {
     collection.delete(document.uri);
     console.error("SQL Atlas analysis failed", error);
@@ -105,11 +118,15 @@ class IgnoreRuleCodeActionProvider implements vscode.CodeActionProvider {
 }
 
 export function activate(context: vscode.ExtensionContext): void {
-  context.subscriptions.push(collection);
+  context.subscriptions.push(collection, status);
   context.subscriptions.push(
     vscode.workspace.onDidOpenTextDocument(analyzeDocument),
     vscode.workspace.onDidChangeTextDocument(({ document }) => analyzeDocument(document)),
     vscode.workspace.onDidCloseTextDocument((document) => collection.delete(document.uri)),
+    vscode.window.onDidChangeActiveTextEditor((editor) => {
+      if (editor?.document.languageId === "sql") analyzeDocument(editor.document);
+      else status.hide();
+    }),
     vscode.workspace.onDidChangeConfiguration((event) => {
       if (!event.affectsConfiguration("sqlAtlas")) return;
       vscode.workspace.textDocuments.forEach(analyzeDocument);
@@ -119,6 +136,23 @@ export function activate(context: vscode.ExtensionContext): void {
       new IgnoreRuleCodeActionProvider(),
       { providedCodeActionKinds: [vscode.CodeActionKind.QuickFix] },
     ),
+    vscode.commands.registerCommand("sqlAtlas.analyzeCurrentFile", async () => {
+      const editor = vscode.window.activeTextEditor;
+      if (!editor || editor.document.languageId !== "sql") {
+        void vscode.window.showInformationMessage("Open a .sql file to run SQL Atlas.");
+        return;
+      }
+      analyzeDocument(editor.document);
+      await vscode.commands.executeCommand("workbench.actions.view.problems");
+    }),
+    vscode.commands.registerCommand("sqlAtlas.openSample", async () => {
+      const sample = await vscode.workspace.openTextDocument({
+        language: "sql",
+        content: "SELECT *\nFROM users\nWHERE LOWER(email) LIKE '%@example.com'\nORDER BY RANDOM();\n",
+      });
+      await vscode.window.showTextDocument(sample);
+      analyzeDocument(sample);
+    }),
   );
   vscode.workspace.textDocuments.forEach(analyzeDocument);
 }

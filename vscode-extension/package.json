@@ -2,7 +2,7 @@
   "name": "sql-atlas",
   "displayName": "SQL Atlas",
   "description": "Local SQL diagnostics for PostgreSQL, MySQL, SQLite, SQL Server and Oracle.",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "publisher": "Milosz",
   "license": "MIT",
   "repository": {
@@ -18,7 +18,55 @@
   "keywords": ["sql", "postgresql", "mysql", "sqlite", "database", "lint"],
   "activationEvents": ["onLanguage:sql"],
   "main": "./dist/extension.cjs",
+  "icon": "assets/icon.png",
   "contributes": {
+    "commands": [
+      {
+        "command": "sqlAtlas.analyzeCurrentFile",
+        "title": "Analyze Current SQL File",
+        "category": "SQL Atlas",
+        "icon": "$(search-fuzzy)"
+      },
+      {
+        "command": "sqlAtlas.openSample",
+        "title": "Open Interactive Sample",
+        "category": "SQL Atlas",
+        "icon": "$(beaker)"
+      }
+    ],
+    "menus": {
+      "editor/title/run": [
+        {
+          "command": "sqlAtlas.analyzeCurrentFile",
+          "when": "editorLangId == sql",
+          "group": "navigation"
+        }
+      ]
+    },
+    "walkthroughs": [
+      {
+        "id": "sqlAtlas.gettingStarted",
+        "title": "Find risky SQL before it ships",
+        "description": "Run your first local SQL analysis in under a minute.",
+        "steps": [
+          {
+            "id": "trySample",
+            "title": "Try a realistic SQL sample",
+            "description": "Run [Open Interactive Sample](command:sqlAtlas.openSample) and see diagnostics directly in the editor."
+          },
+          {
+            "id": "viewProblems",
+            "title": "Understand the findings",
+            "description": "Open the Problems panel with [Show Problems](command:workbench.actions.view.problems). Each finding includes a rule ID and a concrete suggestion."
+          },
+          {
+            "id": "configure",
+            "title": "Match your database",
+            "description": "Choose PostgreSQL, MySQL, SQLite, SQL Server or Oracle in [SQL Atlas Settings](command:workbench.action.openSettings?%40ext%3AMilosz.sql-atlas)."
+          }
+        ]
+      }
+    ],
     "configuration": {
       "title": "SQL Atlas",
       "properties": {

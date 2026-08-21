@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  diagnosticSummary,
   findFragmentOffset,
   shouldShowSeverity,
 } from "../vscode/diagnosticUtils";
@@ -18,5 +19,10 @@ describe("VS Code diagnostic helpers", () => {
     expect(shouldShowSeverity("critical", "warning")).toBe(true);
     expect(shouldShowSeverity("warning", "warning")).toBe(true);
     expect(shouldShowSeverity("info", "warning")).toBe(false);
+  });
+
+  it("explains the result in plain language", () => {
+    expect(diagnosticSummary(0, 0, 0)).toBe("SQL Atlas: no issues");
+    expect(diagnosticSummary(1, 2, 0)).toBe("SQL Atlas: 1 critical, 2 warnings");
   });
 });
