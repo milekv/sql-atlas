@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+## 0.8.0 - 2026-08-22
+
+### Analysis accuracy
+
+- Mask PostgreSQL escape strings and quoted identifiers during structural analysis.
+- Ignore `COPY FROM STDIN` payloads so dump data cannot trigger SQL findings.
+
 ## 0.7.0 - 2026-08-21
 
 ### Integrations

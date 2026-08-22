@@ -2,12 +2,33 @@ import type { AnalyzerContext, SqlDialect } from "./types";
 
 interface MaskOptions {
   strings: boolean;
+  copyData?: boolean;
 }
 
 const blank = (character: string): string =>
   character === "\n" || character === "\r" ? character : " ";
 
-const maskSql = (sql: string, { strings }: MaskOptions): string => {
+const maskCopyFromStdinData = (sourceSql: string, structuralSql: string): string => {
+  const output = sourceSql.split("");
+  const headerPattern = /\bcopy\b(?:(?!;)[\s\S])*?\bfrom\s+stdin\s*;[^\r\n]*(?:\r?\n|$)/gi;
+
+  for (const header of structuralSql.matchAll(headerPattern)) {
+    const dataStart = header.index + header[0].length;
+    const terminator = structuralSql
+      .slice(dataStart)
+      .match(/^[\t ]*\\\.[\t ]*(?:\r?$)/m);
+    if (!terminator?.index && terminator?.index !== 0) continue;
+
+    const dataEnd = dataStart + terminator.index + terminator[0].length;
+    for (let index = dataStart; index < dataEnd; index += 1) {
+      output[index] = blank(sourceSql[index]!);
+    }
+  }
+
+  return output.join("");
+};
+
+const maskSql = (sql: string, { strings, copyData = true }: MaskOptions): string => {
   const output = sql.split("");
   let index = 0;
   let blockDepth = 0;
@@ -98,7 +119,10 @@ const maskSql = (sql: string, { strings }: MaskOptions): string => {
     index += 1;
   }
 
-  return output.join("");
+  const structuralSql = output.join("");
+  return copyData
+    ? maskCopyFromStdinData(structuralSql, structuralSql)
+    : structuralSql;
 };
 
 export const maskSqlComments = (sql: string): string =>
@@ -135,13 +159,15 @@ export const createAnalyzerContext = (
   dialect: SqlDialect,
 ): AnalyzerContext => {
   const commentMaskedSql = maskSqlComments(sql);
-  const maskedSql = maskSqlStructure(sql);
+  const structuralSql = maskSql(sql, { strings: true, copyData: false });
+  const maskedSql = maskCopyFromStdinData(structuralSql, structuralSql);
+  const statementSql = maskCopyFromStdinData(sql, structuralSql);
   return {
     sql,
     commentMaskedSql,
     maskedSql,
     normalizedSql: normalizeSql(sql),
-    statements: splitAtStructuralSemicolons(sql, maskedSql),
+    statements: splitAtStructuralSemicolons(statementSql, maskedSql),
     maskedStatements: splitAtStructuralSemicolons(maskedSql, maskedSql),
     dialect,
   };

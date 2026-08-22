@@ -58,6 +58,19 @@ describe("realistic PostgreSQL parsing", () => {
     expect(createAnalyzerContext(sql, "postgresql").statements).toHaveLength(1);
   });
 
+  it("does not analyze PostgreSQL COPY FROM STDIN payloads as SQL", () => {
+    const sql = String.raw`COPY audit_log (id, message) FROM STDIN;
+1\tDELETE FROM users; JOIN accounts
+2\tDROP TABLE orders;
+\.
+SELECT id FROM audit_log WHERE id = 1 LIMIT 1;`;
+    const ids = analyzeQuery(sql).findings.map((finding) => finding.id);
+    expect(ids).not.toContain("delete-without-where");
+    expect(ids).not.toContain("unsafe-drop-table");
+    expect(ids).not.toContain("missing-join-condition");
+    expect(createAnalyzerContext(sql, "postgresql").statements).toHaveLength(2);
+  });
+
   it("accepts a PostgreSQL NATURAL JOIN as an intentional join condition", () => {
     const sql = "SELECT customer_id FROM customers NATURAL JOIN accounts LIMIT 10;";
     expect(analyzeQuery(sql).findings.map((finding) => finding.id)).not.toContain(

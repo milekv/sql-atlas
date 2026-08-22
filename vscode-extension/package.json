@@ -2,7 +2,7 @@
   "name": "sql-atlas",
   "displayName": "SQL Atlas",
   "description": "Local SQL diagnostics for PostgreSQL, MySQL, SQLite, SQL Server and Oracle.",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "publisher": "Milosz",
   "license": "MIT",
   "repository": {
