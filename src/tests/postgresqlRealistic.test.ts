@@ -41,6 +41,23 @@ describe("realistic PostgreSQL parsing", () => {
     );
   });
 
+  it("handles PostgreSQL escape strings without leaking SQL structure", () => {
+    const sql = String.raw`SELECT id FROM logs WHERE message = E'it\'s a JOIN without ON; DELETE FROM users' LIMIT 10;`;
+    const ids = analyzeQuery(sql).findings.map((finding) => finding.id);
+    expect(ids).not.toContain("missing-join-condition");
+    expect(ids).not.toContain("delete-without-where");
+    expect(createAnalyzerContext(sql, "postgresql").statements).toHaveLength(1);
+  });
+
+  it("ignores SQL keywords and semicolons inside quoted identifiers", () => {
+    const sql = `SELECT "JOIN; DELETE FROM users", "customer""ORDER BY" FROM audit_log LIMIT 10;`;
+    const ids = analyzeQuery(sql).findings.map((finding) => finding.id);
+    expect(ids).not.toContain("missing-join-condition");
+    expect(ids).not.toContain("delete-without-where");
+    expect(ids).not.toContain("order-by-without-limit");
+    expect(createAnalyzerContext(sql, "postgresql").statements).toHaveLength(1);
+  });
+
   it("accepts a PostgreSQL NATURAL JOIN as an intentional join condition", () => {
     const sql = "SELECT customer_id FROM customers NATURAL JOIN accounts LIMIT 10;";
     expect(analyzeQuery(sql).findings.map((finding) => finding.id)).not.toContain(

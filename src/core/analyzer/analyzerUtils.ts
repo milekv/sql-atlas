@@ -55,11 +55,34 @@ const maskSql = (sql: string, { strings }: MaskOptions): string => {
       continue;
     }
 
-    if (sql[index] === "'") {
+    if (sql[index] === '"') {
       const start = index;
       index += 1;
       while (index < sql.length) {
-        if (sql[index] === "'" && sql[index + 1] === "'") {
+        if (sql[index] === '"' && sql[index + 1] === '"') {
+          index += 2;
+        } else if (sql[index] === '"') {
+          index += 1;
+          break;
+        } else {
+          index += 1;
+        }
+      }
+      maskRange(start, index);
+      continue;
+    }
+
+    if (sql[index] === "'") {
+      const start = index;
+      const escaped =
+        index > 0 &&
+        (sql[index - 1] === "E" || sql[index - 1] === "e") &&
+        (index < 2 || !/[A-Za-z0-9_$]/.test(sql[index - 2]!));
+      index += 1;
+      while (index < sql.length) {
+        if (escaped && sql[index] === "\\") {
+          index += Math.min(2, sql.length - index);
+        } else if (sql[index] === "'" && sql[index + 1] === "'") {
           index += 2;
         } else if (sql[index] === "'") {
           index += 1;
