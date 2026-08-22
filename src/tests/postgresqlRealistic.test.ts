@@ -122,6 +122,32 @@ SELECT id FROM audit_log WHERE id = 1 LIMIT 1;`;
     );
   });
 
+  it("checks the predicate of every JOIN in one statement", () => {
+    const sql = `
+      SELECT orders.id
+      FROM orders
+      JOIN customers
+      JOIN regions ON regions.id = customers.region_id
+      LIMIT 10;
+    `;
+    expect(analyzeQuery(sql).findings.map((finding) => finding.id)).toContain(
+      "missing-join-condition",
+    );
+  });
+
+  it("accepts multiple JOINs when each has its own predicate", () => {
+    const sql = `
+      SELECT orders.id
+      FROM orders
+      JOIN customers ON customers.id = orders.customer_id
+      LEFT JOIN regions USING (region_id)
+      LIMIT 10;
+    `;
+    expect(analyzeQuery(sql).findings.map((finding) => finding.id)).not.toContain(
+      "missing-join-condition",
+    );
+  });
+
   it("accepts a NOT IN subquery that explicitly filters NULL values", () => {
     const sql = `
       SELECT id
