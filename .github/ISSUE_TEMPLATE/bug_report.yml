@@ -1,0 +1,65 @@
+name: Bug report
+description: Report an incorrect finding, missed finding, parser problem, or integration failure
+title: "[Bug]: "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: Thanks for reporting a problem. A minimal SQL example is the fastest way to reproduce analyzer issues.
+  - type: input
+    id: version
+    attributes:
+      label: SQL Atlas version
+      placeholder: 0.8.0
+    validations:
+      required: true
+  - type: dropdown
+    id: surface
+    attributes:
+      label: Where did the problem occur?
+      options:
+        - Web app
+        - CLI
+        - GitHub Action
+        - VS Code extension
+    validations:
+      required: true
+  - type: dropdown
+    id: dialect
+    attributes:
+      label: SQL dialect
+      options:
+        - PostgreSQL
+        - MySQL
+        - Oracle
+        - SQLite
+        - SQL Server
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: sql
+    attributes:
+      label: Minimal SQL example
+      description: Remove private table and column names if necessary.
+      render: sql
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behaviour
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behaviour
+    validations:
+      required: true
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional context
+      description: Include configuration, CLI output, or workflow logs when relevant.

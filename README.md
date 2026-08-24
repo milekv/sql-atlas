@@ -10,7 +10,7 @@ send SQL to an external service.
 
 ```yaml
 - uses: actions/checkout@v7
-- uses: milekv/sql-atlas@v0.7.0
+- uses: milekv/sql-atlas@v0.8.0
   with:
     paths: "**/*.sql"
     dialect: postgresql
@@ -36,7 +36,7 @@ SQL Atlas to lokalne, bezpieczne i działające bez AI narzędzie dla developer�
 
 **Demo:** [https://milekv.github.io/sql-atlas/](https://milekv.github.io/sql-atlas/)
 
-**Current version:** `v0.7.0`
+**Current version:** `v0.8.0`
 
 > Wklej SQL. Znajdź problemy. Zrozum dlaczego. Optymalizuj świadomie.
 
@@ -292,7 +292,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
-      - uses: milekv/sql-atlas@v0.7.0
+      - uses: milekv/sql-atlas@v0.8.0
         with:
           paths: |
             migrations/**/*.sql
