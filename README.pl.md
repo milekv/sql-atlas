@@ -8,7 +8,7 @@
 
 [![CI](https://github.com/milekv/sql-atlas/actions/workflows/ci.yml/badge.svg)](https://github.com/milekv/sql-atlas/actions/workflows/ci.yml) [![npm](https://img.shields.io/npm/v/sql-atlas)](https://www.npmjs.com/package/sql-atlas) [![MIT](https://img.shields.io/badge/license-MIT-249b73)](LICENSE)
 
-> **Stan wydania:** npm, Marketplace, rozszerzenie i publiczne demo odpowiadają opublikowanym wersjom. Rozbudowany import planów SQL Server, diagnostyka Monaco i pozostałe zmiany opisane poniżej są dostępne w kodzie tej gałęzi do czasu nowego wydania. Projekt nie jest oznaczony jako 1.0.
+> **Stan wydania:** Publiczne demo w przeglądarce odpowiada kodowi z gałęzi `main`. Pakiet npm, rozszerzenie z VS Code Marketplace oraz wersja GitHub Action oznaczona tagiem pozostają przy opublikowanym wydaniu 0.8.0 do czasu osobnej publikacji. Projekt nie jest oznaczony jako 1.0.
 
 ## Wypróbuj
 
@@ -16,7 +16,7 @@
 npx --yes sql-atlas@0.8.0 analyze examples/safe-query.sql --dialect postgresql
 ```
 
-Możesz też otworzyć [demo w przeglądarce](https://milekv.github.io/sql-atlas/) i wkleić zapytanie. Aby uruchomić funkcje z bieżącego kodu, wykonaj `npm ci && npm run dev` i otwórz lokalny adres pokazany przez Vite.
+Możesz też otworzyć [demo w przeglądarce](https://milekv.github.io/sql-atlas/) i wkleić zapytanie. Aby rozwijać aplikację lokalnie, wykonaj `npm ci && npm run dev` i otwórz adres pokazany przez Vite.
 
 ```sql
 SELECT * FROM users WHERE LOWER(email) LIKE '%example.com';
@@ -26,7 +26,7 @@ Analizator pokazuje miejsce trafienia reguły, wyjaśnia, co warto sprawdzić, i
 
 ## W przeglądarce
 
-Zrzuty wykonano w Chromium z bieżącej wersji kodu uruchomionej lokalnie. Pokazują również funkcje, których nie wdrożono jeszcze do publicznego demo.
+Zrzuty wykonano w Chromium z bieżącej wersji kodu uruchomionej lokalnie. Te same funkcje są dostępne w publicznym demo.
 
 | Diagnostyka zapytań i przejście do kodu | Plan SQL Server Showplan XML |
 | --- | --- |
