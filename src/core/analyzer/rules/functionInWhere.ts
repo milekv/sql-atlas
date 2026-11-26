@@ -2,7 +2,7 @@ import type { AnalyzerRule } from "../types";
 import { createFinding, getWhereClause } from "./ruleUtils";
 
 const functionOnColumnPattern =
-  /\b(lower|upper|trim|date|coalesce|substring|substr|cast)\s*\(\s*([\w."]+)/i;
+  /\b(?:extract\s*\(\s*\w+\s+from\s+[\w."]+|datepart\s*\(\s*\w+\s*,\s*[\w."]+|convert\s*\(\s*[\w.]+\s*,\s*[\w."]+|(?:lower|upper|trim|date|coalesce|substring|substr|cast|year|month|trunc)\s*\(\s*[\w."]+)/gi;
 
 export const functionInWhereRule: AnalyzerRule = {
   id: "function-in-where",
@@ -11,21 +11,22 @@ export const functionInWhereRule: AnalyzerRule = {
   category: "indexing",
   analyze: (context) => {
     const whereClause = getWhereClause(context);
-    const fragment = whereClause?.match(functionOnColumnPattern)?.[0];
-
-    if (!fragment) {
-      return null;
-    }
-
-    return createFinding({
+    if (!whereClause) return null;
+    const whereStart = context.maskedSql.indexOf(whereClause);
+    return [...whereClause.matchAll(functionOnColumnPattern)].map((match) => {
+      const fragment = context.sql.slice(whereStart + match.index, whereStart + match.index + match[0].length);
+      return createFinding({
       id: "function-in-where",
       severity: "warning",
       category: "indexing",
       detectedFragment: fragment,
+      statementOffset: whereStart + match.index,
       scoreImpact: 12,
       relatedTopicIds: ["functional-indexes", "index-basics"],
-      suggestedSqlSnippet:
-        "CREATE INDEX idx_table_lower_column\nON table_name (LOWER(column_name));",
+      suggestedSqlSnippet: /^lower\s*\(/i.test(fragment)
+        ? "CREATE INDEX idx_table_lower_column\nON table_name (LOWER(column_name));"
+        : undefined,
+      });
     });
   },
 };

@@ -1,5 +1,5 @@
 import type { AnalyzerRule } from "../types";
-import { createFinding, firstMatch } from "./ruleUtils";
+import { allMatches, createFinding } from "./ruleUtils";
 
 export const selectStarRule: AnalyzerRule = {
   id: "select-star",
@@ -7,23 +7,19 @@ export const selectStarRule: AnalyzerRule = {
   passedKey: "rule.select-star.passed",
   category: "readability",
   analyze: (context) => {
-    const fragment = firstMatch(
+    const matches = allMatches(
       context,
-      /\bselect\s+(?:distinct\s+)?(?:[\w"]+\.)?\*/i,
+      /\bselect\s+(?:distinct\s+)?(?:[\w"]+\.)?\*/gi,
     );
-
-    if (!fragment) {
-      return null;
-    }
-
-    return createFinding({
+    return matches.map(({ fragment, offset }) => createFinding({
       id: "select-star",
       severity: "warning",
       category: "readability",
       detectedFragment: fragment,
+      statementOffset: offset,
       scoreImpact: 8,
       relatedTopicIds: ["select-basics", "covering-indexes", "unbounded-result-set"],
       suggestedSqlSnippet: "SELECT id, name, created_at\nFROM table_name;",
-    });
+    }));
   },
 };

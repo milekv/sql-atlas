@@ -1,5 +1,5 @@
 import type { AnalyzerRule } from "../types";
-import { createFinding } from "./ruleUtils";
+import { actionStart, createFinding, hasTopLevelWhere } from "./ruleUtils";
 
 export const updateWithoutWhereRule: AnalyzerRule = {
   id: "update-without-where",
@@ -7,11 +7,8 @@ export const updateWithoutWhereRule: AnalyzerRule = {
   passedKey: "rule.update-without-where.passed",
   category: "safety",
   analyze: (context) => {
-    const statementIndex = context.maskedStatements.findIndex(
-      (candidate) =>
-        /^\s*update\b/i.test(candidate) && !/\bwhere\b/i.test(candidate),
-    );
-    const statement = statementIndex < 0 ? undefined : context.statements[statementIndex];
+    const offset = actionStart(context.maskedSql, "update");
+    const statement = offset >= 0 && !hasTopLevelWhere(context.maskedSql.slice(offset)) ? context.sql : undefined;
 
     if (!statement) {
       return null;
@@ -21,7 +18,8 @@ export const updateWithoutWhereRule: AnalyzerRule = {
       id: "update-without-where",
       severity: "critical",
       category: "safety",
-      detectedFragment: statement,
+      detectedFragment: statement.slice(offset).trimStart(),
+      statementOffset: offset,
       scoreImpact: 30,
       relatedTopicIds: ["transactions", "sql-antipatterns-overview"],
       suggestedSqlSnippet:
