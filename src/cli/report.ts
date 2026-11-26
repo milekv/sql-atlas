@@ -1,6 +1,7 @@
 import type { QueryAnalysisResult } from "../core/analyzer/types";
 import { createMarkdownReport } from "../core/report-export/markdownReport";
 import { createTranslator } from "../i18n/i18n";
+import type { Language } from "../types";
 import type { CliFormat, SqlInput } from "./types";
 
 export interface CliAnalysis {
@@ -8,24 +9,23 @@ export interface CliAnalysis {
   result: QueryAnalysisResult;
 }
 
-const t = createTranslator("en");
-
-const textReport = (analyses: CliAnalysis[]): string => {
-  const lines = ["SQL Atlas analysis", ""];
+const textReport = (analyses: CliAnalysis[], language: Language): string => {
+  const t = createTranslator(language);
+  const lines = [language === "pl" ? "Analiza SQL Atlas" : "SQL Atlas analysis", ""];
   for (const { input, result } of analyses) {
-    lines.push(`${input.source} - score ${result.score}/100`);
+    lines.push(`${input.source} - ${language === "pl" ? "punktacja reguł" : "score"} ${result.score}/100`);
     if (result.findings.length === 0) {
-      lines.push("  No findings.");
+      lines.push(language === "pl" ? "  Brak trafień reguł." : "  No findings.");
     } else {
       for (const finding of result.findings) {
         lines.push(
-          `  [${finding.severity}] ${t(finding.titleKey)} (-${finding.scoreImpact})`,
+          `  [${language === "pl" ? t(`severity.${finding.severity}`) : finding.severity}] ${t(finding.titleKey)} (-${finding.scoreImpact})`,
         );
         lines.push(`    ${t(finding.suggestionKey)}`);
       }
     }
     if (result.indexSuggestions.length > 0) {
-      lines.push(`  Index suggestions: ${result.indexSuggestions.length}`);
+      lines.push(`  ${language === "pl" ? "Sugestie indeksów" : "Index suggestions"}: ${result.indexSuggestions.length}`);
       for (const suggestion of result.indexSuggestions) {
         lines.push(`    ${suggestion.sqlSnippet.replace(/\s+/g, " ").trim()}`);
       }
@@ -38,12 +38,13 @@ const textReport = (analyses: CliAnalysis[]): string => {
     0,
   );
   lines.push(
-    `${analyses.length} input${analyses.length === 1 ? "" : "s"}, ${findingCount} finding${findingCount === 1 ? "" : "s"}.`,
+    language === "pl" ? `${analyses.length} plików lub wejść, ${findingCount} trafień reguł.`
+      : `${analyses.length} input${analyses.length === 1 ? "" : "s"}, ${findingCount} finding${findingCount === 1 ? "" : "s"}.`,
   );
   return `${lines.join("\n")}\n`;
 };
 
-const jsonReport = (analyses: CliAnalysis[]): string =>
+const jsonReport = (analyses: CliAnalysis[], language: Language): string =>
   `${JSON.stringify(
     {
       version: 1,
@@ -64,10 +65,11 @@ const jsonReport = (analyses: CliAnalysis[]): string =>
           id: finding.id,
           severity: finding.severity,
           category: finding.category,
-          title: t(finding.titleKey),
-          suggestion: t(finding.suggestionKey),
+          title: createTranslator(language)(finding.titleKey),
+          suggestion: createTranslator(language)(finding.suggestionKey),
           scoreImpact: finding.scoreImpact,
           detectedFragment: finding.detectedFragment,
+          location: finding.location,
         })),
         indexSuggestions: result.indexSuggestions,
       })),
@@ -76,14 +78,14 @@ const jsonReport = (analyses: CliAnalysis[]): string =>
     2,
   )}\n`;
 
-const markdownReport = (analyses: CliAnalysis[]): string =>
+const markdownReport = (analyses: CliAnalysis[], language: Language): string =>
   analyses
     .map(
       ({ input, result }) =>
-        `<!-- source: ${input.source} -->\n\n**Source:** \`${input.source}\`\n\n${createMarkdownReport({
+        `<!-- source: ${input.source} -->\n\n**${language === "pl" ? "Źródło" : "Source"}:** \`${input.source}\`\n\n${createMarkdownReport({
           analysis: result,
-          language: "en",
-          t,
+          language,
+          t: createTranslator(language),
         })}`,
     )
     .join("\n---\n\n");
@@ -103,7 +105,8 @@ const fragmentRegion = (sql: string, fragment?: string) => {
   return { startLine: lines.length, startColumn: lines.at(-1)!.length + 1 };
 };
 
-const sarifReport = (analyses: CliAnalysis[]): string => {
+const sarifReport = (analyses: CliAnalysis[], language: Language): string => {
+  const t = createTranslator(language);
   const findings = analyses.flatMap(({ input, result }) =>
     result.findings.map((finding) => ({ input, finding })),
   );
@@ -135,7 +138,9 @@ const sarifReport = (analyses: CliAnalysis[]): string => {
         message: { text: `${t(finding.titleKey)} ${t(finding.suggestionKey)}` },
         locations: [{ physicalLocation: {
           artifactLocation: { uri: input.source.replace(/\\/g, "/") },
-          region: fragmentRegion(input.sql, finding.detectedFragment),
+          region: finding.location
+            ? { startLine: finding.location.line, startColumn: finding.location.column }
+            : fragmentRegion(input.sql, finding.detectedFragment),
         } }],
         properties: { category: finding.category, scoreImpact: finding.scoreImpact },
       })),
@@ -146,9 +151,10 @@ const sarifReport = (analyses: CliAnalysis[]): string => {
 export const createCliReport = (
   format: CliFormat,
   analyses: CliAnalysis[],
+  language: Language = "en",
 ): string => {
-  if (format === "json") return jsonReport(analyses);
-  if (format === "markdown") return markdownReport(analyses);
-  if (format === "sarif") return sarifReport(analyses);
-  return textReport(analyses);
+  if (format === "json") return jsonReport(analyses, language);
+  if (format === "markdown") return markdownReport(analyses, language);
+  if (format === "sarif") return sarifReport(analyses, language);
+  return textReport(analyses, language);
 };
