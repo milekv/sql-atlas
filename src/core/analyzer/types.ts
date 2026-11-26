@@ -67,6 +67,10 @@ export interface AnalyzerFinding {
   severity: Exclude<AnalyzerSeverity, "success">;
   category: AnalyzerCategory;
   detectedFragment?: string;
+  /** Internal offset relative to the current statement, before result assembly. */
+  statementOffset?: number;
+  /** One-based coordinates and zero-based offsets in the original SQL source. */
+  location?: { start: number; end: number; line: number; column: number };
   explanationKey: TranslationKey;
   suggestionKey: TranslationKey;
   scoreImpact: number;
@@ -87,7 +91,7 @@ export interface AnalyzerRule {
   titleKey: TranslationKey;
   passedKey: TranslationKey;
   category: AnalyzerCategory;
-  analyze: (context: AnalyzerContext) => AnalyzerFinding | null;
+  analyze: (context: AnalyzerContext) => AnalyzerFinding | AnalyzerFinding[] | null;
 }
 
 export interface ScoreBreakdown {
