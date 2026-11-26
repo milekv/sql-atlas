@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="320" viewBox="0 0 1280 320" role="img" aria-labelledby="title desc">
+<title id="title">SQL Atlas</title><desc id="desc">Local SQL diagnostics and execution plan review</desc>
+<rect width="1280" height="320" fill="#090e17"/>
+<path d="M0 319H1280M0 0H1280" stroke="#26394c"/>
+<path d="M40 48H1240M40 272H1240" stroke="#183242"/>
+<rect x="64" y="91" width="104" height="104" rx="24" fill="#102535" stroke="#40c8e8" stroke-width="3"/>
+<ellipse cx="116" cy="115" rx="29" ry="11" fill="none" stroke="#40c8e8" stroke-width="4"/>
+<path d="M87 115v45c0 6 13 12 29 12s29-6 29-12v-45M87 138c0 6 13 12 29 12s29-6 29-12" fill="none" stroke="#40c8e8" stroke-width="4"/>
+<path d="M104 162l9 9 19-21" fill="none" stroke="#63d4a2" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="204" y="156" fill="#e8f0fa" font-family="DejaVu Sans,Arial,sans-serif" font-size="59" font-weight="700" letter-spacing="-2">SQL Atlas</text>
+<text x="206" y="194" fill="#a2b5c9" font-family="DejaVu Sans,Arial,sans-serif" font-size="20">Local SQL diagnostics and execution plan review</text>
+<path d="M915 104h263M915 135h221M915 166h238M915 197h179" stroke="#253b4e" stroke-width="12" stroke-linecap="round"/>
+<path d="M916 104h69M916 135h107M916 166h55M916 197h92" stroke="#40c8e8" stroke-width="12" stroke-linecap="round"/>
+<text x="64" y="250" fill="#62cba0" font-family="DejaVu Sans,Arial,sans-serif" font-size="15" letter-spacing="2">BROWSER   /   CLI   /   VS CODE   /   CI</text>
+</svg>
