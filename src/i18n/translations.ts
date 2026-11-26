@@ -503,7 +503,7 @@ export const pl = {
   "privacy.noTracking": "Bez śledzenia",
   "privacy.languages": "EN/PL",
 
-  "nav.dashboard": "Dashboard",
+  "nav.dashboard": "Pulpit",
   "nav.queryAnalyzer": "Analizator zapytań",
   "nav.indexAdvisor": "Doradca indeksów",
   "nav.knowledgeBase": "Baza wiedzy",
