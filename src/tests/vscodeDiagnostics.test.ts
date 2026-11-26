@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   diagnosticSummary,
   findFragmentOffset,
+  resolveExtensionLanguage,
   shouldShowSeverity,
 } from "../vscode/diagnosticUtils";
 
@@ -24,5 +25,13 @@ describe("VS Code diagnostic helpers", () => {
   it("explains the result in plain language", () => {
     expect(diagnosticSummary(0, 0, 0)).toBe("SQL Atlas: no issues");
     expect(diagnosticSummary(1, 2, 0)).toBe("SQL Atlas: 1 critical, 2 warnings");
+    expect(diagnosticSummary(1, 2, 0, "pl")).toBe("SQL Atlas: 1 krytyczny, 2 ostrzeżenia");
+  });
+
+  it("uses the editor language unless the user chooses English or Polish", () => {
+    expect(resolveExtensionLanguage("auto", "pl-PL")).toBe("pl");
+    expect(resolveExtensionLanguage("auto", "en-US")).toBe("en");
+    expect(resolveExtensionLanguage("en", "pl-PL")).toBe("en");
+    expect(resolveExtensionLanguage("pl", "en-US")).toBe("pl");
   });
 });

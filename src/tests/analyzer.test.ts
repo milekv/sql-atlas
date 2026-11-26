@@ -42,6 +42,71 @@ describe("SQL analyzer rules", () => {
     expectRule("DELETE FROM sessions;", "delete-without-where");
   });
 
+  it("reports every unsafe statement at the original keyword, ignoring comments", () => {
+    const sql = "-- DELETE FROM accounts;\nDELETE FROM sessions;\nUPDATE users SET active = false;\nDELETE FROM logs;";
+    const result = analyzeQuery(sql);
+    expect(result.findings.filter((finding) => finding.id === "delete-without-where")
+      .map((finding) => finding.location?.line)).toEqual([2, 4]);
+    expect(result.findings.find((finding) => finding.id === "update-without-where")?.location?.line).toBe(3);
+  });
+
+  it("does not accept WHERE located only inside a subquery as a DELETE or UPDATE safeguard", () => {
+    const sql = "DELETE FROM sessions USING (SELECT id FROM users WHERE active = false) old;\nUPDATE users SET active = (SELECT active FROM defaults WHERE id = 1);";
+    const ids = analyzeQuery(sql).findings.map((finding) => finding.id);
+    expect(ids).toContain("delete-without-where");
+    expect(ids).toContain("update-without-where");
+  });
+
+  it("reports multiple SELECT stars but charges a rule once", () => {
+    const single = analyzeQuery("SELECT * FROM a;");
+    const multiple = analyzeQuery("SELECT * FROM a; SELECT * FROM b;");
+    expect(multiple.findings.filter((finding) => finding.id === "select-star")).toHaveLength(2);
+    expect(multiple.score).toBe(single.score);
+  });
+
+  it("reports repeated occurrences within one statement at distinct source offsets", () => {
+    const sql = "SELECT * FROM users WHERE LOWER(email) = 'x' AND LOWER(name) = 'y' OR city LIKE '%a' OR country LIKE '%b' ORDER BY RANDOM(), RANDOM();";
+    const findings = analyzeQuery(sql).findings;
+    for (const id of ["function-in-where", "leading-wildcard-like", "order-by-random"] as const) {
+      const hits = findings.filter((finding) => finding.id === id);
+      expect(hits).toHaveLength(2);
+      expect(hits[0]?.location?.start).toBeLessThan(hits[1]!.location!.start);
+      expect(hits.map((hit) => sql.slice(hit.location!.start, hit.location!.end).toLowerCase()))
+        .toEqual(hits.map((hit) => hit.detectedFragment!.toLowerCase()));
+    }
+  });
+
+  it("does not match a LIKE token inside a quoted literal or comment", () => {
+    const sql = "SELECT 'LIKE ''%fake''' AS txt /* LIKE '%comment' */ FROM users WHERE title LIKE '%real';";
+    expect(analyzeQuery(sql).findings.filter((finding) => finding.id === "leading-wildcard-like")).toHaveLength(1);
+  });
+
+  it("keeps T-SQL GO batches separate and ignores bracket-quoted keywords", () => {
+    const sql = "SELECT [DELETE; FROM x] FROM dbo.Users;\nGO\nDELETE FROM dbo.Logs;\nGO\nUPDATE dbo.Users SET [WHERE] = 1;";
+    const result = analyzeQuery(sql, "sqlserver");
+    expect(result.findings.filter((finding) => finding.id === "delete-without-where")
+      .map((finding) => finding.location?.line)).toEqual([3]);
+    expect(result.findings.filter((finding) => finding.id === "update-without-where")
+      .map((finding) => finding.location?.line)).toEqual([5]);
+  });
+
+  it("ignores semicolons and keywords inside MySQL backtick identifiers", () => {
+    const sql = "SELECT `DELETE; FROM fake` FROM users; DELETE FROM logs;";
+    expect(analyzeQuery(sql, "mysql").findings.filter((finding) => finding.id === "delete-without-where")
+      .map((finding) => finding.location?.start)).toEqual([sql.lastIndexOf("DELETE")]);
+  });
+
+  it("ignores PostgreSQL dollar-quoted function body during analysis", () => {
+    const sql = "CREATE FUNCTION f() RETURNS text AS $body$ DELETE FROM users; $body$ LANGUAGE sql; SELECT id FROM users WHERE id = 1;";
+    expect(analyzeQuery(sql).findings.map((finding) => finding.id)).not.toContain("delete-without-where");
+  });
+
+  it("locates EXTRACT in a compound WHERE expression", () => {
+    const sql = "SELECT id FROM events\nWHERE status = 'open' AND EXTRACT(YEAR FROM created_at) = 2026 LIMIT 1;";
+    const finding = analyzeQuery(sql).findings.find((item) => item.id === "function-in-where");
+    expect(finding?.location).toMatchObject({ line: 2, column: 27 });
+  });
+
   it("passes DELETE with WHERE", () => {
     const result = analyzeQuery("DELETE FROM sessions WHERE expires_at < NOW();");
     expect(result.findings.map((finding) => finding.id)).not.toContain(

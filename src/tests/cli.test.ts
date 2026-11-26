@@ -75,6 +75,21 @@ describe("SQL Atlas CLI", () => {
     expect(context.error()).toBe("");
   });
 
+  it("renders Polish text, JSON and Markdown without English report labels", async () => {
+    const sql = "DELETE FROM sessions;";
+    for (const format of ["text", "json", "markdown"]) {
+      const context = createIo({}, sql);
+      expect(await runCli(["analyze", "--language", "pl", "--format", format], context.io)).toBe(0);
+      expect(context.output()).toContain("DELETE bez WHERE");
+      if (format === "text") expect(context.output()).toContain("Analiza SQL Atlas");
+      if (format === "markdown") {
+        expect(context.output()).toContain("# Raport SQL Atlas");
+        expect(context.output()).toContain("Wydajność:");
+        expect(context.output()).not.toContain("- None");
+      }
+    }
+  });
+
   it("returns stable JSON for multiple files", async () => {
     const context = createIo({
       [resolve("/project/a.sql")]: "SELECT * FROM customers;",
@@ -153,6 +168,18 @@ describe("SQL Atlas CLI", () => {
         })],
       }),
     ]));
+  });
+
+  it("points SARIF results at each unsafe statement, not a matching comment", async () => {
+    const sql = "-- DELETE FROM old_table;\nDELETE FROM first_table;\nDELETE FROM second_table;";
+    const context = createIo({ [resolve("/project/unsafe.sql")]: sql });
+    expect(await runCli(["analyze", "unsafe.sql", "--format", "sarif"], context.io)).toBe(0);
+    const report = JSON.parse(context.output());
+    const lines = report.runs[0].results
+      .filter((result: { ruleId: string }) => result.ruleId === "delete-without-where")
+      .map((result: { locations: Array<{ physicalLocation: { region: { startLine: number } } }> }) =>
+        result.locations[0]!.physicalLocation.region.startLine);
+    expect(lines).toEqual([2, 3]);
   });
 
   it("reports usage and input errors with exit code 2", async () => {
