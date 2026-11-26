@@ -11,6 +11,10 @@ inputs:
     description: postgresql, mysql, oracle, sqlite, sqlserver or generic.
     required: false
     default: postgresql
+  language:
+    description: Language of annotations and summary (en or pl).
+    required: false
+    default: en
   fail-on:
     description: Minimum severity that fails the step. Use none to report only.
     required: false

@@ -53,3 +53,9 @@ Keep finding messages specific enough that a developer can act on them without r
 - Do not include unrelated formatting or generated-file changes.
 
 By contributing, you agree that your contribution is licensed under the MIT License.
+
+## Plan fixtures and translations
+
+A new plan parser feature should cite the format specification and include a licensed or self-generated real plan fixture where feasible. Keep third-party attribution in `docs/THIRD_PARTY_NOTICES.md`. Do not commit production query text or private plan files. Include both estimated and actual cases, missing counters, invalid input and operator-level edge cases.
+
+For UI changes, add or review corresponding keys in both `en` and `pl` dictionaries. Verify the rendered behavior in a browser when one is available; a typecheck or jsdom test is not visual QA. Add examples to the README only when the source branch actually supports them, and distinguish source-only features from published releases.

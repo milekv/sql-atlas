@@ -2,6 +2,18 @@
 
 ## Unreleased
 
+### Source branch after 2ca4edf
+
+- Bundle Monaco and its worker with the web app so the analyzer works without a third-party CDN; verify diagnostics and navigation in Chromium.
+- Replace obsolete app screenshots with captures from the current running app and collapse repeated statement conversion warnings in the Showplan view.
+- Parse and display a Microsoft-sourced SQL Server actual Showplan fixture with operator details, per-thread counters, DOP and memory grants.
+- Test a second Microsoft plan and compare structure/estimates while warning when QueryHash differs; do not infer measured speedups.
+- Import SQL Server STATISTICS IO and TIME Messages without falsely correlating them with an independently imported plan.
+- Locate DELETE/UPDATE after CTEs while distinguishing nested predicates.
+- Add a reproducible PostgreSQL date-filter benchmark with result-equivalence validation; no measurements published.
+- Rework English and Polish repository documentation and add consistent banner, icon and Social Preview assets. These changes are not yet in the published packages.
+
+
 ### Analysis accuracy
 
 - Validate every `JOIN` predicate independently so a later `ON` clause cannot hide an unsafe earlier join.
