@@ -4,7 +4,7 @@ Run only against a disposable database. `setup.sql` drops and recreates the sche
 
 ```bash
 export SQL_ATLAS_BENCH_DSN='postgresql://localhost/sql_atlas_benchmark'
-./benchmarks/postgresql/run.sh | tee benchmark-output.txt
+bash ./benchmarks/postgresql/run.sh | tee benchmark-output.txt
 ```
 
 `measure.sql` first compares the **full multiset of IDs** with `EXCEPT ALL` in both directions and aborts on a mismatch. Then it records two executions of each predicate using `EXPLAIN (ANALYZE, BUFFERS, FORMAT JSON)`. Look at actual duration, buffer reads/hits, returned rows and access paths. Run several times on an otherwise idle instance, record PostgreSQL version, hardware, warm/cold cache and chosen plan. Do not infer a universal speedup; optimizer choices depend on statistics, index selectivity and cache state.
