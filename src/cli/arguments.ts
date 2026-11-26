@@ -40,6 +40,7 @@ export const parseCliArgs = (args: string[]): ParsedCommand => {
     dialect: "postgresql",
     files: [],
     format: "text",
+    language: "en",
     ignoreRules: [],
   };
 
@@ -54,6 +55,11 @@ export const parseCliArgs = (args: string[]): ParsedCommand => {
       const value = takeValue(args, index, argument) as AnalyzeOptions["format"];
       if (!cliFormats.includes(value)) throw new Error(`Unsupported format: ${value}.`);
       options.format = value;
+      index += 1;
+    } else if (argument === "--language") {
+      const value = takeValue(args, index, argument);
+      if (value !== "en" && value !== "pl") throw new Error(`Unsupported language: ${value}.`);
+      options.language = value;
       index += 1;
     } else if (argument === "--output" || argument === "-o") {
       options.output = takeValue(args, index, argument);

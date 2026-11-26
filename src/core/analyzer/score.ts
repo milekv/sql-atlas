@@ -28,7 +28,8 @@ export const calculateScoreBreakdown = (
     indexing: 100,
   };
 
-  return findings.reduce<ScoreBreakdown>((breakdown, finding) => {
+  const unique = [...new Map(findings.map((finding) => [finding.id, finding])).values()];
+  return unique.reduce<ScoreBreakdown>((breakdown, finding) => {
     if (!isScoredCategory(finding.category)) {
       return breakdown;
     }
@@ -43,7 +44,8 @@ export const calculateScoreBreakdown = (
 };
 
 export const calculateOverallScore = (findings: AnalyzerFinding[]): number => {
-  const totalImpact = findings.reduce(
+  const unique = [...new Map(findings.map((finding) => [finding.id, finding])).values()];
+  const totalImpact = unique.reduce(
     (impact, finding) => impact + finding.scoreImpact,
     0,
   );

@@ -1,0 +1,16 @@
+{
+  "command.analyze": "Przeanalizuj bieżący plik SQL",
+  "command.sample": "Otwórz interaktywny przykład",
+  "walkthrough.title": "Wykryj ryzykowny SQL przed wdrożeniem",
+  "walkthrough.description": "Przeprowadź pierwszą lokalną analizę SQL w minutę.",
+  "step.0.title": "Wypróbuj przykładowe zapytanie",
+  "step.0.description": "Uruchom [Otwórz interaktywny przykład](command:sqlAtlas.openSample), aby zobaczyć diagnostykę bezpośrednio w edytorze.",
+  "step.1.title": "Poznaj wykryte problemy",
+  "step.1.description": "Otwórz panel Problemy przez [Pokaż problemy](command:workbench.actions.view.problems). Każdy wynik zawiera identyfikator reguły i wskazówkę.",
+  "step.2.title": "Wybierz silnik bazy danych",
+  "step.2.description": "Wybierz PostgreSQL, MySQL, SQLite, SQL Server lub Oracle w [ustawieniach SQL Atlas](command:workbench.action.openSettings?%40ext%3AMilosz.sql-atlas).",
+  "config.sqlAtlas.dialect": "Dialekt SQL używany podczas analizy.",
+  "config.sqlAtlas.language": "Język diagnostyki: automatycznie według języka VS Code, angielski lub polski.",
+  "config.sqlAtlas.minimumSeverity": "Najniższa ważność problemów pokazywanych w edytorze.",
+  "config.sqlAtlas.ignoreRules": "Identyfikatory reguł SQL Atlas wyłączonych w tym obszarze roboczym."
+}

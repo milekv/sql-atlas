@@ -1,5 +1,5 @@
 import type { AnalyzerRule } from "../types";
-import { createFinding, firstMatch } from "./ruleUtils";
+import { createFinding } from "./ruleUtils";
 
 export const orderByRandomRule: AnalyzerRule = {
   id: "order-by-random",
@@ -7,24 +7,19 @@ export const orderByRandomRule: AnalyzerRule = {
   passedKey: "rule.order-by-random.passed",
   category: "performance",
   analyze: (context) => {
-    const fragment = firstMatch(
-      context,
-      /\border\s+by\s+(random\s*\(\)|rand\s*\(\)|newid\s*\(\))/i,
-    );
-
-    if (!fragment) {
-      return null;
-    }
-
-    return createFinding({
+    const order = /\border\s+by\s+([\s\S]*?)(?:\blimit\b|\boffset\b|\bfetch\b|$)/i.exec(context.maskedSql);
+    if (!order) return null;
+    const start = order.index + order[0].indexOf(order[1]!);
+    return [...order[1]!.matchAll(/\b(?:random|rand|newid)\s*\(\s*\)/gi)].map((match) => createFinding({
       id: "order-by-random",
       severity: "warning",
       category: "performance",
-      detectedFragment: fragment,
+      detectedFragment: context.sql.slice(start + match.index, start + match.index + match[0].length),
+      statementOffset: start + match.index,
       scoreImpact: 12,
       relatedTopicIds: ["query-optimization-basics", "order-by"],
       suggestedSqlSnippet:
         "SELECT *\nFROM table_name TABLESAMPLE SYSTEM (1)\nLIMIT 1;",
-    });
+    }));
   },
 };

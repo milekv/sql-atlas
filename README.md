@@ -1,329 +1,119 @@
+<p align="center"><img src="docs/assets/banner.svg" alt="SQL Atlas: local SQL diagnostics and execution plan review" width="100%"></p>
+
 # SQL Atlas
 
-Local SQL analysis for the terminal, pull requests, VS Code and the browser.
-SQL Atlas applies deterministic rules to SQL, reports concrete findings and
-keeps the analyzed source on the machine or GitHub runner where it was invoked.
+**Local SQL diagnostics for editors, CI and the browser.** Inspect risky query patterns, follow findings to source locations and review PostgreSQL or SQL Server plans without sending SQL to an analysis service.
 
-[Live app](https://milekv.github.io/sql-atlas/) |
-[GitHub Marketplace](https://github.com/marketplace/actions/sql-atlas) |
-[npm](https://www.npmjs.com/package/sql-atlas) |
-[VS Code](https://marketplace.visualstudio.com/items?itemName=Milosz.sql-atlas)
-| [Polska wersja](README.pl.md)
+[English](README.md) · [Polski](README.pl.md) · [Live app](https://milekv.github.io/sql-atlas/) · [npm](https://www.npmjs.com/package/sql-atlas) · [VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=Milosz.sql-atlas) · [GitHub Action](https://github.com/marketplace/actions/sql-atlas)
 
-[![CI](https://github.com/milekv/sql-atlas/actions/workflows/ci.yml/badge.svg)](https://github.com/milekv/sql-atlas/actions/workflows/ci.yml)
-[![npm version](https://img.shields.io/npm/v/sql-atlas)](https://www.npmjs.com/package/sql-atlas)
-[![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+[![CI](https://github.com/milekv/sql-atlas/actions/workflows/ci.yml/badge.svg)](https://github.com/milekv/sql-atlas/actions/workflows/ci.yml) [![npm](https://img.shields.io/npm/v/sql-atlas)](https://www.npmjs.com/package/sql-atlas) [![MIT](https://img.shields.io/badge/license-MIT-249b73)](LICENSE)
 
-Current release: `v0.8.0`
+> **Release boundary:** npm, Marketplace, the extension and the live demo currently reflect published releases. The SQL Server plan improvements, Monaco diagnostics and other changes documented below are in this source branch until a new release is built and published. No 1.0 release is claimed.
 
-## What it does
-
-SQL Atlas is a static analysis and database tooling project. Its core analyzer
-is shared by four interfaces:
-
-- a CLI for local checks and CI pipelines
-- a GitHub Action with annotations and job summaries
-- a VS Code extension with diagnostics and rule suppression quick fixes
-- a browser application for interactive analysis and supporting tools
-
-The analyzer detects risky or expensive SQL patterns, assigns severity and
-score information, identifies the relevant source range and suggests a next
-step. It does not execute queries or claim to predict production performance.
-Findings should be verified against the real schema, data distribution and
-execution plan.
-
-## Quick start
-
-Analyze a file from the terminal:
+## Try it
 
 ```bash
-npx --yes sql-atlas@0.8.0 analyze query.sql
+npx --yes sql-atlas@0.8.0 analyze examples/safe-query.sql --dialect postgresql
 ```
 
-Analyze several PostgreSQL files and return JSON:
+Or open the [browser demo](https://milekv.github.io/sql-atlas/) and paste a query. For the features in this source branch, run `npm ci && npm run dev` and open the local URL printed by Vite.
+
+```sql
+SELECT * FROM users WHERE LOWER(email) LIKE '%example.com';
+```
+
+The analyzer reports the matched ranges, explains why a pattern warrants review and offers possible next steps. `SELECT *`, a function on a filtered column and a leading wildcard may be relevant here. Whether an index or rewrite helps depends on the real schema, data and execution plan. SQL Atlas does **not** execute this query.
+
+## In the browser
+
+These screenshots were captured from the current source running locally in Chromium. They show features that have not yet been deployed to the public demo.
+
+| Query diagnostics and source navigation | SQL Server Showplan XML |
+| --- | --- |
+| ![SQL analyzer with Monaco markers and recommendations](public/screenshots/query-analyzer.png) | ![Imported SQL Server plan with operator tree and details](public/screenshots/sql-server-showplan.png) |
+
+[Index candidates](public/screenshots/index-advisor.png) · [PostgreSQL EXPLAIN](public/screenshots/postgresql-explain.png) · [Polish analyzer](public/screenshots/query-analyzer-pl.png)
+
+## What is available
+
+| Surface | Current behavior |
+| --- | --- |
+| Browser | Monaco findings and source navigation, index candidates, SQL knowledge base, PostgreSQL JSON EXPLAIN, SQL Server Showplan XML and STATISTICS IO/TIME import, PostgreSQL DDL visualization; English and Polish UI. |
+| CLI | Local file/stdin analysis; text, JSON, Markdown and SARIF; language, dialect and policy options. |
+| VS Code | Inline diagnostics, Problems panel, language setting, severity filtering and a file-level ignore quick fix. |
+| GitHub Action | SQL file annotations, job summary and fail thresholds for pull request workflows. |
+
+The Showplan importer displays operator trees, estimates, reported per-thread runtime counters, object names, memory grants and selected warnings. A second plan can be imported for structural comparison; differing `QueryHash` values are flagged. The tool does not infer an execution time from estimated cost or a root cause from an operator name alone. See [plan format and fixture notes](docs/PLAN_FORMATS.md).
+
+| SQL input dialect | Static rules | Plan import |
+| --- | --- | --- |
+| PostgreSQL | Yes, heuristic | JSON EXPLAIN |
+| SQL Server / T-SQL | Yes, heuristic | Showplan XML and separate IO/TIME messages |
+| Oracle | Yes, heuristic | Not yet available |
+| MySQL, SQLite, generic | Yes, heuristic | Not yet available |
+
+Dialect selection does not imply full parsing of every vendor extension. The rule engine uses lexical masking and targeted patterns; complex procedural SQL and nested scopes still require manual review.
+
+## Install and integrate
+
+CLI:
 
 ```bash
-npx --yes sql-atlas@0.8.0 analyze migrations/001.sql migrations/002.sql \
-  --dialect postgresql \
-  --format json
+npm install --save-dev sql-atlas@0.8.0
+npx sql-atlas analyze 'migrations/**/*.sql' --dialect postgresql --format sarif --output sql-atlas.sarif
 ```
 
-Use SQL Atlas in a pull request:
+Policy configuration and suppressions are explained in [CLI and Action guide](docs/INTEGRATIONS.md). CLI exit codes are `0` for success, `1` for a configured policy failure and `2` for input/configuration errors.
+
+GitHub Actions (published tag):
 
 ```yaml
 name: SQL review
-
-on:
-  pull_request:
-    paths:
-      - "**/*.sql"
-
+on: [pull_request]
 permissions:
   contents: read
-
 jobs:
-  sql-atlas:
+  analyze:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
       - uses: milekv/sql-atlas@v0.8.0
         with:
-          paths: "**/*.sql"
+          paths: '**/*.sql'
           dialect: postgresql
           fail-on: critical
 ```
 
-## Analyzer
+Install [SQL Atlas for VS Code](https://marketplace.visualstudio.com/items?itemName=Milosz.sql-atlas) or build the source extension with `npm run package:vscode`. The browser, CLI, Action and extension share the same analyzer rules in this repository; releases may lag behind this branch.
 
-The rule-based analyzer currently covers patterns such as:
+## Professional workflows
 
-- `SELECT *` and unbounded reads
-- `UPDATE` or `DELETE` without `WHERE`
-- missing join conditions and cross joins
-- functions in filters and leading-wildcard searches
-- offset pagination and unbounded sorting
-- `NOT IN` with nullable values
-- implicit conversion risks
-- excessive joins, `OR` conditions or grouping columns
-- possible N+1 query patterns
+- Review migration files in CI and inspect findings at exact source positions.
+- Examine suspicious date predicates or broad reads, then compare alternative SQL on a representative database.
+- Import a PostgreSQL `EXPLAIN (ANALYZE, BUFFERS, FORMAT JSON)` result or SQL Server `.sqlplan` into the local browser tool.
+- Paste SQL Server `SET STATISTICS IO/TIME` messages as separate measurements; do not assume an imported plan and messages are from the same execution.
 
-Rules run independently for each parsed statement. PostgreSQL-aware scanning
-handles quoted identifiers, escaped strings, nested block comments and
-dollar-quoted function bodies so that SQL-looking text inside those regions is
-not treated as executable structure.
+The [PostgreSQL date filter benchmark](benchmarks/postgresql/README.md) provides repeatable data, a result-equivalence check and measurement commands. No benchmark timings are reported without an actual database run.
 
-The browser application adds:
+## Privacy and scope
 
-- index suggestions derived from filters, joins, grouping and ordering
-- a PostgreSQL `EXPLAIN (ANALYZE, BUFFERS, FORMAT JSON)` parser
-- an execution tree with timing, buffer and estimation signals
-- a PostgreSQL `CREATE TABLE` schema visualizer
-- query structure mapping and before-and-after examples
-- a SQL knowledge base and dialect comparison reference
+The analyzer and plan viewer work locally in the browser or on your own machine/CI runner. The project contains no required backend, account or AI service. The application does not upload pasted SQL or plans for analysis. Imported plans can contain object names, query text and literals; handle them as sensitive files. Opening the public demo still loads its static assets from GitHub Pages.
 
-Index suggestions and rewrites are starting points for verification, not
-automatic migration advice.
+The static score measures matched rules, **not** latency, safety or correctness. Suggested indexes ignore existing schema, write overhead and data distribution. Example rewrites need semantic review. [Current implementation status](docs/IMPLEMENTATION_STATUS.md) lists tested behavior and open gaps.
 
-## CLI reference
+## Architecture and development
 
-The CLI accepts one or more files or SQL from standard input. Analysis remains
-local and the published package has no runtime dependencies.
-
-```bash
-echo "SELECT * FROM customers;" | npx --yes sql-atlas@0.8.0 analyze -
+```mermaid
+flowchart TD
+  C["Shared analyzer and rules"] --> W["Browser and Monaco"]
+  C --> V["VS Code"]
+  C --> L["CLI and reports"]
+  C --> A["GitHub Action"]
+  P["PostgreSQL JSON / SQL Server XML + IO/TIME"] --> W
 ```
 
-Apply a policy threshold in CI:
-
-```bash
-npx --yes sql-atlas@0.8.0 analyze schema.sql \
-  --fail-on critical \
-  --min-score 70
-```
-
-Export a report:
-
-```bash
-npx --yes sql-atlas@0.8.0 analyze query.sql \
-  --format markdown \
-  --output sql-report.md
-```
-
-Supported dialects:
-
-- `postgresql`
-- `mysql`
-- `oracle`
-- `sqlite`
-- `sqlserver`
-- `generic`
-
-Supported output formats:
-
-- human-readable text
-- JSON
-- Markdown
-- SARIF 2.1.0
-
-Generate SARIF for GitHub Code Scanning or another compatible viewer:
-
-```bash
-npx --yes sql-atlas@0.8.0 analyze "migrations/**/*.sql" \
-  --format sarif \
-  --output sql-atlas.sarif
-```
-
-Exit codes:
-
-- `0` - analysis completed and configured thresholds passed
-- `1` - a `--fail-on` or `--min-score` policy failed
-- `2` - invalid arguments, configuration, unreadable input or empty SQL
-
-Run `npx --yes sql-atlas@0.8.0 --help` for the complete command reference.
-
-## Rule configuration and ignores
-
-Disable rules for one command:
-
-```bash
-npx --yes sql-atlas@0.8.0 analyze query.sql \
-  --ignore distinct-overuse,possible-n-plus-one-pattern
-```
-
-For a repository policy, create `sql-atlas.json`:
-
-```json
-{
-  "rules": {
-    "distinct-overuse": "off",
-    "possible-n-plus-one-pattern": "off"
-  }
-}
-```
-
-Pass it to the CLI with `--config sql-atlas.json` or to the GitHub Action with
-the `config` input. Unknown rule identifiers and invalid values are reported as
-configuration errors rather than ignored silently.
-
-A file can suppress specific rules without changing repository policy:
-
-```sql
--- sql-atlas-ignore select-star, unbounded-select
-SELECT * FROM small_reference_table;
-```
-
-Disabled rules are excluded from findings, scores and passed checks.
-
-## GitHub Action
-
-The Action resolves repository-relative glob patterns, analyzes matching SQL
-files and provides:
-
-- file annotations for findings
-- a Markdown report in the job summary
-- `files`, `findings` and `lowest-score` outputs
-- `fail-on` and `min-score` policy controls
-- shared configuration and workflow-level ignores
-
-Example with a shared policy:
-
-```yaml
-- uses: milekv/sql-atlas@v0.8.0
-  with:
-    paths: |
-      migrations/**/*.sql
-      schema/**/*.sql
-    dialect: postgresql
-    config: sql-atlas.json
-    ignore: distinct-overuse
-    fail-on: critical
-    min-score: 60
-```
-
-Empty files are skipped with a warning. A run fails only when the configured
-policy is violated or when the input or configuration is invalid.
-
-## VS Code extension
-
-The extension analyzes `.sql` documents as they are edited and exposes
-findings through native VS Code diagnostics. It supports:
-
-- all SQL Atlas dialects
-- a configurable minimum severity
-- workspace-level ignored rules
-- a quick fix for adding a file-level `sql-atlas-ignore` directive
-
-Analysis is performed inside the extension process. It does not require a
-database connection or external analysis service.
-
-Build a VSIX locally:
-
-```bash
-npm run package:vscode
-```
-
-## Browser application
-
-The [browser app](https://milekv.github.io/sql-atlas/) runs without an account
-or backend. SQL is analyzed in the browser and is not uploaded to a service.
-The interface is available in English and Polish.
-
-Screenshots:
-
-| Query analyzer | EXPLAIN and supporting tools |
-| --- | --- |
-| ![SQL Atlas query analyzer](public/screenshots/query-analyzer.png) | ![SQL Atlas dashboard](public/screenshots/dashboard.png) |
-
-The repository does not include application analytics or a database
-connection. As with any developer tool, remove secrets and private customer
-data before using real production examples.
-
-## Architecture
-
-The deterministic core is separated from each delivery surface:
-
-```text
-src/core/analyzer       rules, scoring and configuration
-src/core/index-advisor  structural index suggestions
-src/core/explain        PostgreSQL EXPLAIN JSON parser
-src/core/schema         PostgreSQL CREATE TABLE parser
-src/cli                 terminal interface and reports
-src/action              GitHub Action integration
-src/vscode              editor diagnostics
-src/features            browser application features
-src/tests               unit and integration tests
-```
-
-This boundary keeps the CLI, Action, editor extension and browser app aligned
-without duplicating analyzer behaviour.
-
-## Local development
-
-Requirements:
-
-- Node.js 20 or newer
-- npm
-
-```bash
-git clone https://github.com/milekv/sql-atlas.git
-cd sql-atlas
-npm ci
-npm run dev
-```
-
-Run the project checks:
-
-```bash
-npm run typecheck
-npm test
-npm run build
-```
-
-CI verifies the TypeScript build, test suite and committed GitHub Action
-bundle. Separate workflows smoke-test the Action and deploy the browser app to
-GitHub Pages.
-
-## Current limitations
-
-- Analysis is static and does not use database statistics or execute SQL.
-- Dialect support is rule-aware but not a complete parser for every vendor
-  extension.
-- Index suggestions cannot account for write cost, existing indexes, table
-  size or production data distribution.
-- The schema visualizer currently targets PostgreSQL `CREATE TABLE` input.
-- The VS Code extension and CLI share analyzer rules but do not expose every
-  browser-only visualization.
-
-These constraints are intentional boundaries of the current release. When
-performance matters, validate recommendations with representative data,
-`EXPLAIN ANALYZE`, monitoring and database-specific review.
-
-## Contributing
-
-See [CONTRIBUTING.md](CONTRIBUTING.md) for setup, test expectations and guidance
-for analyzer changes. Bug reports should include a minimal SQL example and the
-selected dialect.
+Node.js 20+ and npm are required. Run `npm ci`, `npm test`, `npm run typecheck` and `npm run build`. The browser code lives in `src/features`, shared parsers and rules in `src/core`, integration adapters in `src/{cli,action,vscode}`, and tests in `src/tests`. See [architecture](ARCHITECTURE.md), [contributing](CONTRIBUTING.md), [roadmap](ROADMAP.md), [security](SECURITY.md) and [release process](docs/RELEASING.md).
 
 ## License
 
-[MIT](LICENSE)
+[MIT](LICENSE). The imported Microsoft sample plan has its own [MIT attribution](docs/THIRD_PARTY_NOTICES.md).

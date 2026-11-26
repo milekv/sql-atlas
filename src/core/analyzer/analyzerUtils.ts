@@ -93,6 +93,24 @@ const maskSql = (sql: string, { strings, copyData = true }: MaskOptions): string
       continue;
     }
 
+    if (sql[index] === "[" || sql[index] === "`") {
+      const start = index;
+      const closing = sql[index] === "[" ? "]" : "`";
+      index += 1;
+      while (index < sql.length) {
+        if (sql[index] === closing && sql[index + 1] === closing) {
+          index += 2;
+        } else if (sql[index] === closing) {
+          index += 1;
+          break;
+        } else {
+          index += 1;
+        }
+      }
+      maskRange(start, index);
+      continue;
+    }
+
     if (sql[index] === "'") {
       const start = index;
       const escaped =
@@ -134,6 +152,9 @@ export const stripSqlComments = (sql: string): string =>
 export const maskSqlStructure = (sql: string): string =>
   maskSql(sql, { strings: true });
 
+export const maskCopyPayload = (sql: string): string =>
+  maskCopyFromStdinData(sql, maskSql(sql, { strings: true, copyData: false }));
+
 const splitAtStructuralSemicolons = (sql: string, structuralSql: string): string[] => {
   const statements: string[] = [];
   let start = 0;
@@ -146,6 +167,33 @@ const splitAtStructuralSemicolons = (sql: string, structuralSql: string): string
   const finalStatement = sql.slice(start).trim();
   if (finalStatement) statements.push(finalStatement);
   return statements;
+};
+
+export const statementRanges = (sql: string, structuralSql: string, dialect: SqlDialect = "generic"): Array<{ sql: string; offset: number }> => {
+  const ranges: Array<{ sql: string; offset: number }> = [];
+  let start = 0;
+  const append = (end: number, nextStart = end + 1) => {
+    const raw = sql.slice(start, end);
+    const leading = raw.length - raw.trimStart().length;
+    const statement = raw.trim();
+    if (statement) ranges.push({ sql: statement, offset: start + leading });
+    start = nextStart;
+  };
+  for (let index = 0; index < structuralSql.length; index += 1) {
+    if (structuralSql[index] === ";") {
+      append(index);
+      continue;
+    }
+    if (dialect !== "sqlserver" || (index > 0 && structuralSql[index - 1] !== "\n")) continue;
+    const lineEnd = structuralSql.indexOf("\n", index);
+    const end = lineEnd < 0 ? structuralSql.length : lineEnd;
+    if (/^\s*GO(?:\s+\d+)?\s*$/i.test(structuralSql.slice(index, end))) {
+      append(index, end < structuralSql.length ? end + 1 : end);
+      index = end;
+    }
+  }
+  append(sql.length);
+  return ranges;
 };
 
 export const splitSqlStatements = (sql: string): string[] =>

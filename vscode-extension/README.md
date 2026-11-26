@@ -38,6 +38,7 @@ Open Settings and search for `SQL Atlas`.
 | Setting | Purpose | Default |
 | --- | --- | --- |
 | `sqlAtlas.dialect` | Interpret database-specific syntax correctly | `postgresql` |
+| `sqlAtlas.language` | Diagnostic language: `auto`, `en` or `pl` (in this source branch) | `auto` |
 | `sqlAtlas.minimumSeverity` | Control which findings appear | `info` |
 | `sqlAtlas.ignoreRules` | Disable selected rule IDs in the workspace | `[]` |
 
@@ -50,3 +51,5 @@ Analysis is static and local. SQL Atlas does not execute SQL and cannot know you
 Source, documentation, CLI and GitHub Action: [github.com/milekv/sql-atlas](https://github.com/milekv/sql-atlas)
 
 Found an incorrect diagnostic? Please open a focused [issue](https://github.com/milekv/sql-atlas/issues) with the smallest reproducible SQL example.
+
+The source branch supports Polish diagnostics and extension UI strings. Check the Marketplace version before assuming that a published VSIX contains unreleased changes.

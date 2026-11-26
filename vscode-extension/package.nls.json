@@ -1,0 +1,16 @@
+{
+  "command.analyze": "Analyze Current SQL File",
+  "command.sample": "Open Interactive Sample",
+  "walkthrough.title": "Find risky SQL before it ships",
+  "walkthrough.description": "Run your first local SQL analysis in under a minute.",
+  "step.0.title": "Try a realistic SQL sample",
+  "step.0.description": "Run [Open Interactive Sample](command:sqlAtlas.openSample) and see diagnostics directly in the editor.",
+  "step.1.title": "Understand the findings",
+  "step.1.description": "Open the Problems panel with [Show Problems](command:workbench.actions.view.problems). Each finding includes a rule ID and a concrete suggestion.",
+  "step.2.title": "Match your database",
+  "step.2.description": "Choose PostgreSQL, MySQL, SQLite, SQL Server or Oracle in [SQL Atlas Settings](command:workbench.action.openSettings?%40ext%3AMilosz.sql-atlas).",
+  "config.sqlAtlas.dialect": "SQL dialect used for analysis.",
+  "config.sqlAtlas.language": "Diagnostic language: automatic (VS Code UI language), English, or Polish.",
+  "config.sqlAtlas.minimumSeverity": "Lowest finding severity shown in the editor.",
+  "config.sqlAtlas.ignoreRules": "SQL Atlas rule IDs disabled for this workspace."
+}

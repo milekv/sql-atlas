@@ -14,22 +14,34 @@
   "engines": {
     "vscode": "^1.96.0"
   },
-  "categories": ["Linters", "Programming Languages"],
-  "keywords": ["sql", "postgresql", "mysql", "sqlite", "database", "lint"],
-  "activationEvents": ["onLanguage:sql"],
+  "categories": [
+    "Linters",
+    "Programming Languages"
+  ],
+  "keywords": [
+    "sql",
+    "postgresql",
+    "mysql",
+    "sqlite",
+    "database",
+    "lint"
+  ],
+  "activationEvents": [
+    "onLanguage:sql"
+  ],
   "main": "./dist/extension.cjs",
   "icon": "assets/icon.png",
   "contributes": {
     "commands": [
       {
         "command": "sqlAtlas.analyzeCurrentFile",
-        "title": "Analyze Current SQL File",
+        "title": "%command.analyze%",
         "category": "SQL Atlas",
         "icon": "$(search-fuzzy)"
       },
       {
         "command": "sqlAtlas.openSample",
-        "title": "Open Interactive Sample",
+        "title": "%command.sample%",
         "category": "SQL Atlas",
         "icon": "$(beaker)"
       }
@@ -46,23 +58,23 @@
     "walkthroughs": [
       {
         "id": "sqlAtlas.gettingStarted",
-        "title": "Find risky SQL before it ships",
-        "description": "Run your first local SQL analysis in under a minute.",
+        "title": "%walkthrough.title%",
+        "description": "%walkthrough.description%",
         "steps": [
           {
             "id": "trySample",
-            "title": "Try a realistic SQL sample",
-            "description": "Run [Open Interactive Sample](command:sqlAtlas.openSample) and see diagnostics directly in the editor."
+            "title": "%step.0.title%",
+            "description": "%step.0.description%"
           },
           {
             "id": "viewProblems",
-            "title": "Understand the findings",
-            "description": "Open the Problems panel with [Show Problems](command:workbench.actions.view.problems). Each finding includes a rule ID and a concrete suggestion."
+            "title": "%step.1.title%",
+            "description": "%step.1.description%"
           },
           {
             "id": "configure",
-            "title": "Match your database",
-            "description": "Choose PostgreSQL, MySQL, SQLite, SQL Server or Oracle in [SQL Atlas Settings](command:workbench.action.openSettings?%40ext%3AMilosz.sql-atlas)."
+            "title": "%step.2.title%",
+            "description": "%step.2.description%"
           }
         ]
       }
@@ -72,21 +84,45 @@
       "properties": {
         "sqlAtlas.dialect": {
           "type": "string",
-          "enum": ["postgresql", "mysql", "sqlite", "sqlserver", "oracle", "generic"],
+          "enum": [
+            "postgresql",
+            "mysql",
+            "sqlite",
+            "sqlserver",
+            "oracle",
+            "generic"
+          ],
           "default": "postgresql",
-          "description": "SQL dialect used for analysis."
+          "description": "%config.sqlAtlas.dialect%"
+        },
+        "sqlAtlas.language": {
+          "type": "string",
+          "enum": [
+            "auto",
+            "en",
+            "pl"
+          ],
+          "default": "auto",
+          "scope": "resource",
+          "description": "%config.sqlAtlas.language%"
         },
         "sqlAtlas.minimumSeverity": {
           "type": "string",
-          "enum": ["critical", "warning", "info"],
+          "enum": [
+            "critical",
+            "warning",
+            "info"
+          ],
           "default": "info",
-          "description": "Lowest finding severity shown in the editor."
+          "description": "%config.sqlAtlas.minimumSeverity%"
         },
         "sqlAtlas.ignoreRules": {
           "type": "array",
-          "items": { "type": "string" },
+          "items": {
+            "type": "string"
+          },
           "default": [],
-          "description": "SQL Atlas rule IDs disabled for this workspace."
+          "description": "%config.sqlAtlas.ignoreRules%"
         }
       }
     }

@@ -8,14 +8,13 @@ import type {
   SqlDialect,
 } from "../core/analyzer/types";
 import { createTranslator } from "../i18n/i18n";
-import { diagnosticSummary, findFragmentOffset, shouldShowSeverity } from "./diagnosticUtils";
+import { diagnosticSummary, findFragmentOffset, resolveExtensionLanguage, shouldShowSeverity } from "./diagnosticUtils";
 
 const collection = vscode.languages.createDiagnosticCollection("sql-atlas");
 const status = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 10);
 status.name = "SQL Atlas";
 status.command = "sqlAtlas.analyzeCurrentFile";
-status.tooltip = "Run SQL Atlas and show diagnostics";
-const t = createTranslator("en");
+status.tooltip = "SQL Atlas";
 const diagnosticSeverity = (
   severity: Exclude<AnalyzerSeverity, "success">,
 ): vscode.DiagnosticSeverity => {
@@ -30,6 +29,12 @@ const findingRange = (
 ): vscode.Range => {
   const text = document.getText();
   const fragment = finding.detectedFragment;
+  if (finding.location) {
+    return new vscode.Range(
+      document.positionAt(finding.location.start),
+      document.positionAt(finding.location.end),
+    );
+  }
   const offset = findFragmentOffset(text, fragment);
   const matched = fragment
     ? text.toLowerCase().includes(fragment.toLowerCase())
@@ -52,13 +57,15 @@ const configurationFor = (document: vscode.TextDocument) => {
     configuration.get<string[]>("ignoreRules", []).join(","),
     "sqlAtlas.ignoreRules",
   );
-  return { dialect, minimumSeverity, ignoreRules };
+  const languagePreference = configuration.get<"auto" | "pl" | "en">("language", "auto");
+  return { dialect, minimumSeverity, ignoreRules, language: resolveExtensionLanguage(languagePreference, vscode.env.language) };
 };
 
 const analyzeDocument = (document: vscode.TextDocument): void => {
   if (document.languageId !== "sql") return;
   try {
-    const { dialect, minimumSeverity, ignoreRules } = configurationFor(document);
+    const { dialect, minimumSeverity, ignoreRules, language } = configurationFor(document);
+    const t = createTranslator(language);
     const result = analyzeQuery(document.getText(), dialect, { ignoreRules });
     const diagnostics = result.findings
       .filter((finding) => shouldShowSeverity(finding.severity, minimumSeverity))
@@ -80,7 +87,9 @@ const analyzeDocument = (document: vscode.TextDocument): void => {
       const errors = diagnostics.filter((item) => item.severity === vscode.DiagnosticSeverity.Error).length;
       const warnings = diagnostics.filter((item) => item.severity === vscode.DiagnosticSeverity.Warning).length;
       const info = diagnostics.length - errors - warnings;
-      status.text = diagnostics.length === 0 ? "$(pass-filled) SQL Atlas: clean" : `$(warning) ${diagnosticSummary(errors, warnings, info)}`;
+      status.text = diagnostics.length === 0
+        ? `$(pass-filled) ${diagnosticSummary(0, 0, 0, language)}`
+        : `$(warning) ${diagnosticSummary(errors, warnings, info, language)}`;
       status.backgroundColor = errors > 0 ? new vscode.ThemeColor("statusBarItem.errorBackground") : undefined;
       status.show();
     }
@@ -103,8 +112,10 @@ class IgnoreRuleCodeActionProvider implements vscode.CodeActionProvider {
           ? diagnostic.code as RuleId
           : undefined;
         if (!rule) return [];
+        const preference = vscode.workspace.getConfiguration("sqlAtlas", document.uri).get("language", "auto");
+        const language = resolveExtensionLanguage(preference, vscode.env.language);
         const action = new vscode.CodeAction(
-          `SQL Atlas: ignore ${rule} in this file`,
+          `${language === "pl" ? "SQL Atlas: ignoruj" : "SQL Atlas: ignore"} ${rule}`,
           vscode.CodeActionKind.QuickFix,
         );
         action.diagnostics = [diagnostic];
@@ -139,7 +150,8 @@ export function activate(context: vscode.ExtensionContext): void {
     vscode.commands.registerCommand("sqlAtlas.analyzeCurrentFile", async () => {
       const editor = vscode.window.activeTextEditor;
       if (!editor || editor.document.languageId !== "sql") {
-        void vscode.window.showInformationMessage("Open a .sql file to run SQL Atlas.");
+        const language = resolveExtensionLanguage(vscode.workspace.getConfiguration("sqlAtlas").get("language", "auto"), vscode.env.language);
+        void vscode.window.showInformationMessage(language === "pl" ? "Otwórz plik .sql, aby uruchomić SQL Atlas." : "Open a .sql file to run SQL Atlas.");
         return;
       }
       analyzeDocument(editor.document);

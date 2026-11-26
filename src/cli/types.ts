@@ -1,4 +1,5 @@
 import type { RuleId, SqlDialect } from "../core/analyzer/types";
+import type { Language } from "../types";
 
 export const cliFormats = ["text", "json", "markdown", "sarif"] as const;
 export type CliFormat = (typeof cliFormats)[number];
@@ -12,6 +13,7 @@ export interface AnalyzeOptions {
   failOn?: FailureSeverity;
   files: string[];
   format: CliFormat;
+  language: Language;
   minScore?: number;
   output?: string;
   config?: string;

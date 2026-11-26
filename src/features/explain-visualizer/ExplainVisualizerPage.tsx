@@ -4,6 +4,7 @@ import { Badge } from "../../components/ui/Badge";
 import { Button } from "../../components/ui/Button";
 import { Card } from "../../components/ui/Card";
 import { parsePostgresExplainJson } from "../../core/explain/parsePostgresExplainJson";
+import { SqlServerShowplanPage } from "./SqlServerShowplanPage";
 import { sampleExplainJson } from "../../core/explain/samplePlan";
 import type {
   ExplainRiskHint,
@@ -13,6 +14,20 @@ import type {
 import type { Translator } from "../../i18n/types";
 
 export const ExplainVisualizerPage = () => {
+  const { t } = useApp();
+  const [engine, setEngine] = useState<"postgresql" | "sqlserver">("postgresql");
+  return (
+    <div>
+      <div className="mb-5 flex gap-2" role="group" aria-label={t("explain.engine")}>
+        <Button type="button" variant={engine === "postgresql" ? "primary" : "ghost"} onClick={() => setEngine("postgresql")}>PostgreSQL</Button>
+        <Button type="button" variant={engine === "sqlserver" ? "primary" : "ghost"} onClick={() => setEngine("sqlserver")}>SQL Server</Button>
+      </div>
+      {engine === "postgresql" ? <PostgresExplainVisualizerPage /> : <SqlServerShowplanPage />}
+    </div>
+  );
+};
+
+const PostgresExplainVisualizerPage = () => {
   const { t } = useApp();
   const [input, setInput] = useState(sampleExplainJson);
   const [result, setResult] = useState<ParsedExplainPlan>(() =>
@@ -141,7 +156,9 @@ const describeRisk = (risk: ExplainRiskHint, t: Translator): string => {
   }
 };
 
-const PlanNode = ({ node, depth }: { node: PostgresExplainPlanNode; depth: number }) => (
+const PlanNode = ({ node, depth }: { node: PostgresExplainPlanNode; depth: number }) => {
+  const { t } = useApp();
+  return (
   <div className="border-l border-atlas-border pl-3 sm:pl-4" style={{ marginLeft: depth === 0 ? 0 : 12 }}>
     <div className="mb-3 rounded-md border border-atlas-border bg-atlas-panelStrong p-4">
       <div className="flex flex-wrap items-center gap-2">
@@ -150,17 +167,18 @@ const PlanNode = ({ node, depth }: { node: PostgresExplainPlanNode; depth: numbe
         {node.indexName ? <Badge tone="success">{node.indexName}</Badge> : null}
       </div>
       <div className="mt-3 grid gap-2 text-sm text-atlas-muted sm:grid-cols-2 xl:grid-cols-4">
-        <span>cost {formatNumber(node.startupCost)}..{formatNumber(node.totalCost)}</span>
-        <span>rows {formatNumber(node.planRows)} / {formatNumber(node.actualRows)}</span>
-        <span>time {formatMs(node.actualTotalTime)}</span>
-        <span>blocks hit/read {formatNumber(node.sharedHitBlocks)}/{formatNumber(node.sharedReadBlocks)}</span>
+        <span>{t("explain.nodeCost")} {formatNumber(node.startupCost)}..{formatNumber(node.totalCost)}</span>
+        <span>{t("explain.nodeRows")} {formatNumber(node.planRows)} / {formatNumber(node.actualRows)}</span>
+        <span>{t("explain.nodeTime")} {formatMs(node.actualTotalTime)}</span>
+        <span>{t("explain.nodeBlocks")} {formatNumber(node.sharedHitBlocks)}/{formatNumber(node.sharedReadBlocks)}</span>
       </div>
     </div>
     {node.children.map((child, index) => (
       <PlanNode key={`${child.nodeType}-${index}`} node={child} depth={depth + 1} />
     ))}
   </div>
-);
+  );
+};
 
 const PageHeader = ({ title, subtitle }: { title: string; subtitle: string }) => (
   <section>

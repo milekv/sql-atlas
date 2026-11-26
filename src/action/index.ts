@@ -22,7 +22,6 @@ const dialects: SqlDialect[] = [
   "generic",
 ];
 const severities: FailureSeverity[] = ["critical", "warning", "info"];
-const t = createTranslator("en");
 
 const input = (name: string, fallback: string): string =>
   process.env[`INPUT_${name.toUpperCase()}`]?.trim() || fallback;
@@ -61,6 +60,9 @@ const run = async (): Promise<void> => {
     .filter(Boolean);
   const dialect = input("dialect", "postgresql") as SqlDialect;
   if (!dialects.includes(dialect)) throw new Error(`Unsupported dialect: ${dialect}.`);
+  const language = input("language", "en");
+  if (language !== "en" && language !== "pl") throw new Error(`Unsupported language: ${language}.`);
+  const t = createTranslator(language);
 
   const failOnInput = input("fail-on", "critical");
   const failOn = failOnInput === "none" ? undefined : (failOnInput as FailureSeverity);
@@ -101,8 +103,8 @@ const run = async (): Promise<void> => {
       emit(annotation({
         file,
         level: "warning",
-        title: "SQL Atlas: empty file",
-        message: "The file was skipped because it contains no SQL.",
+        title: language === "pl" ? "SQL Atlas: pusty plik" : "SQL Atlas: empty file",
+        message: language === "pl" ? "Pominięto plik bez kodu SQL." : "The file was skipped because it contains no SQL.",
       }));
       continue;
     }
@@ -112,7 +114,7 @@ const run = async (): Promise<void> => {
       emit(annotation({
         file,
         level: severityLevel[finding.severity],
-        line: lineForFragment(sql, finding.detectedFragment),
+        line: finding.location?.line ?? lineForFragment(sql, finding.detectedFragment),
         title: `SQL Atlas: ${t(finding.titleKey)}`,
         message: t(finding.suggestionKey),
       }));
@@ -133,10 +135,12 @@ const run = async (): Promise<void> => {
   }
   const summaryFile = process.env.GITHUB_STEP_SUMMARY;
   if (summaryFile) {
-    await appendFile(summaryFile, createCliReport("markdown", analyses));
+    await appendFile(summaryFile, createCliReport("markdown", analyses, language));
   }
 
-  emit(`SQL Atlas analyzed ${analyses.length} file(s), found ${findings} issue(s), lowest score ${lowestScore}/100.`);
+  emit(language === "pl"
+    ? `SQL Atlas: przeanalizowano ${analyses.length} plików; trafienia reguł: ${findings}; najniższa punktacja statyczna: ${lowestScore}/100.`
+    : `SQL Atlas analyzed ${analyses.length} file(s), found ${findings} issue(s), lowest score ${lowestScore}/100.`);
   if (failedPolicy({ failOn, minScore: minScore === 0 ? undefined : minScore }, analyses)) {
     process.exitCode = 1;
   }

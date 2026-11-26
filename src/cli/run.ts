@@ -23,6 +23,7 @@ Usage:
 Options:
   -d, --dialect <name>   postgresql, mysql, oracle, sqlite, sqlserver, generic
   -f, --format <format>  text, json, markdown, sarif (default: text)
+      --language <lang>  en, pl (default: en)
   -o, --output <file>    Write the report to a file
       --fail-on <level>  Exit 1 for critical, warning or info findings
       --min-score <n>    Exit 1 when any score is below n (0-100)
@@ -100,7 +101,7 @@ export const runCli = async (args: string[], io: CliIo): Promise<number> => {
       input,
       result: analyzeQuery(input.sql, parsed.dialect, { ignoreRules }),
     }));
-    const report = createCliReport(parsed.format, analyses);
+    const report = createCliReport(parsed.format, analyses, parsed.language);
     if (parsed.output === undefined) io.writeStdout(report);
     else await io.writeFile(resolve(io.cwd, parsed.output), report);
     return failedPolicy(parsed, analyses) ? 1 : 0;

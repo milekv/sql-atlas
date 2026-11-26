@@ -1,5 +1,5 @@
 import type { AnalyzerRule } from "../types";
-import { createFinding } from "./ruleUtils";
+import { actionStart, createFinding, hasTopLevelWhere } from "./ruleUtils";
 
 export const deleteWithoutWhereRule: AnalyzerRule = {
   id: "delete-without-where",
@@ -7,11 +7,9 @@ export const deleteWithoutWhereRule: AnalyzerRule = {
   passedKey: "rule.delete-without-where.passed",
   category: "safety",
   analyze: (context) => {
-    const statementIndex = context.maskedStatements.findIndex(
-      (candidate) =>
-        /^\s*delete\s+from\b/i.test(candidate) && !/\bwhere\b/i.test(candidate),
-    );
-    const statement = statementIndex < 0 ? undefined : context.statements[statementIndex];
+    const offset = actionStart(context.maskedSql, "delete");
+    const statement = offset >= 0 && /^delete\s+from\b/i.test(context.maskedSql.slice(offset)) &&
+      !hasTopLevelWhere(context.maskedSql.slice(offset)) ? context.sql : undefined;
 
     if (!statement) {
       return null;
@@ -21,7 +19,8 @@ export const deleteWithoutWhereRule: AnalyzerRule = {
       id: "delete-without-where",
       severity: "critical",
       category: "safety",
-      detectedFragment: statement,
+      detectedFragment: statement.slice(offset).trimStart(),
+      statementOffset: offset,
       scoreImpact: 32,
       relatedTopicIds: ["transactions", "sql-antipatterns-overview"],
       suggestedSqlSnippet:
