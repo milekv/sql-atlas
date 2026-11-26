@@ -38,7 +38,7 @@ export const createMarkdownReport = ({
 
   const formatFindings = (findings: typeof analysis.findings): string =>
     findings.length === 0
-      ? "- None"
+      ? `- ${t("reportMarkdown.none")}`
       : findings
           .map(
             (finding) =>
@@ -53,7 +53,7 @@ export const createMarkdownReport = ({
     .join("\n");
 
   return [
-    "# SQL Atlas Optimization Report",
+    `# ${t("reportMarkdown.title")}`,
     "",
     `**${t("reportMarkdown.generated")}:** ${new Date().toISOString()}`,
     `**${t("reportMarkdown.dialect")}:** ${analysis.dialect}`,
@@ -61,10 +61,10 @@ export const createMarkdownReport = ({
     "",
     `## ${t("reportMarkdown.summary")}`,
     "",
-    `- Performance: ${analysis.scoreBreakdown.performance}/100`,
-    `- Safety: ${analysis.scoreBreakdown.safety}/100`,
-    `- Readability: ${analysis.scoreBreakdown.readability}/100`,
-    `- Indexing: ${analysis.scoreBreakdown.indexing}/100`,
+    `- ${t("category.performance")}: ${analysis.scoreBreakdown.performance}/100`,
+    `- ${t("category.safety")}: ${analysis.scoreBreakdown.safety}/100`,
+    `- ${t("category.readability")}: ${analysis.scoreBreakdown.readability}/100`,
+    `- ${t("category.indexing")}: ${analysis.scoreBreakdown.indexing}/100`,
     "",
     `## ${t("analyzer.topRecommendations")}`,
     "",
@@ -92,7 +92,7 @@ export const createMarkdownReport = ({
     `## ${t("analyzer.passedChecks")}`,
     "",
     analysis.passedChecks.length === 0
-      ? "- None"
+      ? `- ${t("reportMarkdown.none")}`
       : analysis.passedChecks
           .slice(0, 12)
           .map((check) => `- ${t(check.titleKey)}`)
@@ -101,7 +101,7 @@ export const createMarkdownReport = ({
     `## ${t("reportMarkdown.indexes")}`,
     "",
     analysis.indexSuggestions.length === 0
-      ? "- None"
+      ? `- ${t("reportMarkdown.none")}`
       : analysis.indexSuggestions
           .map((suggestion) => `- \`${suggestion.sqlSnippet.replace(/\n/g, " ")}\``)
           .join("\n"),
@@ -114,7 +114,7 @@ export const createMarkdownReport = ({
     "",
     `## ${t("reportMarkdown.related")}`,
     "",
-    relatedTopics || "- None",
+    relatedTopics || `- ${t("reportMarkdown.none")}`,
     "",
     `> ${t("reportMarkdown.disclaimer")}`,
     "",
