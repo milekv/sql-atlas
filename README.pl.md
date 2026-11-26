@@ -49,7 +49,7 @@ Import Showplan pokazuje drzewo operatorów, estymacje, zgłoszone liczniki dla 
 | --- | --- | --- |
 | PostgreSQL | Tak, heurystyczne | EXPLAIN JSON |
 | SQL Server / T-SQL | Tak, heurystyczne | Showplan XML i osobno komunikaty IO/TIME |
-| Oracle | Tak, heurystyczne | Jeszcze niedostępny |
+| Oracle | Tak, heurystyczne | Import tekstu DBMS_XPLAN (jeden plan) |
 | MySQL, SQLite, ogólny | Tak, heurystyczne | Jeszcze niedostępny |
 
 Wybór dialektu nie oznacza pełnego parsera wszystkich rozszerzeń danego silnika. Silnik reguł używa maskowania leksykalnego i wybranych wzorców; złożone bloki proceduralne i zagnieżdżenia wymagają przeglądu człowieka.
@@ -93,7 +93,7 @@ Zainstaluj [SQL Atlas dla VS Code](https://marketplace.visualstudio.com/items?it
 - Importuj wynik PostgreSQL `EXPLAIN (ANALYZE, BUFFERS, FORMAT JSON)` lub plik SQL Server `.sqlplan` do lokalnej aplikacji.
 - Wklej komunikaty SQL Server `SET STATISTICS IO/TIME` jako osobne pomiary. Nie zakładaj, że pochodzą z tego samego wykonania co zaimportowany plan.
 
-[Benchmark filtra dat PostgreSQL](benchmarks/postgresql/README.md) zawiera odtwarzalne dane, sprawdzenie zgodności wyników i polecenia pomiarowe. Nie publikujemy czasu wykonania bez uruchomienia bazy.
+[Benchmark filtra dat PostgreSQL](benchmarks/postgresql/README.md) zawiera odtwarzalny scenariusz serwerowy oraz [rzeczywisty pomiar w PGlite WASM](benchmarks/postgresql/pglite-0.6.0-measurement.json) po sprawdzeniu zgodności wyników. [Scenariusz SQL Server](benchmarks/sqlserver/README.md) jest przygotowany dla testowej instancji; nie ma jeszcze pomiarów SQL Server.
 
 ## Prywatność i ograniczenia
 
@@ -109,7 +109,7 @@ flowchart TD
   C --> V["VS Code"]
   C --> L["CLI i raporty"]
   C --> A["GitHub Action"]
-  P["PostgreSQL JSON / SQL Server XML + IO/TIME"] --> W
+  P["PostgreSQL JSON / SQL Server XML + IO/TIME / Oracle DBMS_XPLAN"] --> W
 ```
 
 Wymagane są Node.js 20+ i npm. Uruchom `npm ci`, `npm test`, `npm run typecheck` i `npm run build`. Aplikacja przeglądarkowa jest w `src/features`, wspólne parsery i reguły w `src/core`, adaptery w `src/{cli,action,vscode}`, a testy w `src/tests`. Zobacz [architekturę](ARCHITECTURE.md), [zasady współtworzenia](CONTRIBUTING.md), [plan rozwoju](ROADMAP.md), [bezpieczeństwo](SECURITY.md) i [proces wydania](docs/RELEASING.md).

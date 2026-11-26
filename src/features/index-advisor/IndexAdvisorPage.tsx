@@ -38,7 +38,7 @@ export const IndexAdvisorPage = () => {
             <Card key={suggestion.id} className="space-y-4">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <div className="flex flex-wrap gap-2">
-                  <Badge tone="cyan">{suggestion.source}</Badge>
+                  <Badge tone="cyan">{t(`indexSource.${suggestion.source}` as never)}</Badge>
                   <Badge tone="neutral">
                     {t(`confidence.${suggestion.confidence}` as never)}
                   </Badge>

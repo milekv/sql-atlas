@@ -1,0 +1,69 @@
+{
+  "engine": "PostgreSQL 19.0 (PGlite 0.6.0) on wasm32-unknown-emscripten, compiled by emcc (Emscripten gcc/clang-like replacement + linker emulating GNU ld) 6.0.13 (e13ee988ce3d87a738dd8f3661d02223308c412a), 32-bit",
+  "environment": "PGlite embedded PostgreSQL WASM, in-memory",
+  "host": {
+    "platform": "linux",
+    "arch": "x64",
+    "node": "v24.22.3",
+    "cpu": "AMD EPYC 9V74 80-Core Processor"
+  },
+  "rowsInserted": 200000,
+  "matchingRows": 49894,
+  "mismatches": 0,
+  "runs": [
+    {
+      "predicate": "extract",
+      "repeat": 1,
+      "executionTimeMs": 51.308,
+      "actualRows": 49894,
+      "nodeType": "Seq Scan",
+      "sharedHitBlocks": 1274,
+      "sharedReadBlocks": 0
+    },
+    {
+      "predicate": "range",
+      "repeat": 1,
+      "executionTimeMs": 26.153,
+      "actualRows": 49894,
+      "nodeType": "Bitmap Heap Scan",
+      "sharedHitBlocks": 1414,
+      "sharedReadBlocks": 0
+    },
+    {
+      "predicate": "range",
+      "repeat": 2,
+      "executionTimeMs": 24.208,
+      "actualRows": 49894,
+      "nodeType": "Bitmap Heap Scan",
+      "sharedHitBlocks": 1414,
+      "sharedReadBlocks": 0
+    },
+    {
+      "predicate": "extract",
+      "repeat": 2,
+      "executionTimeMs": 48.589,
+      "actualRows": 49894,
+      "nodeType": "Seq Scan",
+      "sharedHitBlocks": 1274,
+      "sharedReadBlocks": 0
+    },
+    {
+      "predicate": "extract",
+      "repeat": 3,
+      "executionTimeMs": 46.753,
+      "actualRows": 49894,
+      "nodeType": "Seq Scan",
+      "sharedHitBlocks": 1274,
+      "sharedReadBlocks": 0
+    },
+    {
+      "predicate": "range",
+      "repeat": 3,
+      "executionTimeMs": 25.269,
+      "actualRows": 49894,
+      "nodeType": "Bitmap Heap Scan",
+      "sharedHitBlocks": 1414,
+      "sharedReadBlocks": 0
+    }
+  ]
+}
