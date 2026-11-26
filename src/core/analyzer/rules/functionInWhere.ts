@@ -23,7 +23,7 @@ export const functionInWhereRule: AnalyzerRule = {
       statementOffset: whereStart + match.index,
       scoreImpact: 12,
       relatedTopicIds: ["functional-indexes", "index-basics"],
-      suggestedSqlSnippet: /^lower\s*\(/i.test(fragment)
+      suggestedSqlSnippet: context.dialect === "postgresql" && /^lower\s*\(/i.test(fragment)
         ? "CREATE INDEX idx_table_lower_column\nON table_name (LOWER(column_name));"
         : undefined,
       });

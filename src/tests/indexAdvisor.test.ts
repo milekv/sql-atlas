@@ -79,4 +79,10 @@ describe("index advisor", () => {
   it("does not change a schema-qualified table into a different table name", () => {
     expect(suggestIndexes("SELECT id FROM reporting.events WHERE occurred_at > now()")).toEqual([]);
   });
+
+  it("does not combine OR alternatives into a misleading composite index", () => {
+    const suggestions = suggestIndexes("SELECT id FROM events WHERE category = 'a' OR status = 'open' ORDER BY created_at");
+    expect(suggestions.some((item) => item.source === "composite")).toBe(false);
+    expect(suggestions.some((item) => item.columns.includes("category"))).toBe(true);
+  });
 });

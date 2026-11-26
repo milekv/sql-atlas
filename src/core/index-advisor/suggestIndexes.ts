@@ -275,6 +275,9 @@ const suggestIndexesForStatement = (
   const orderColumns = known(extractClauseColumns(cleanedSql, "order by", scopedTables));
   const groupColumns = known(extractClauseColumns(cleanedSql, "group by", scopedTables));
   const functionalColumns = known(extractFunctionalColumns(cleanedSql, scopedTables));
+  const hasDisjunction = /\bor\b/i.test(cleanedSql.match(
+    /\bwhere\b([\s\S]*?)(?:\bgroup\s+by\b|\border\s+by\b|\bhaving\b|\blimit\b|$)/i,
+  )?.[1] ?? "");
 
   whereColumns.forEach((column) => {
     suggestions.push(
@@ -349,7 +352,7 @@ const suggestIndexesForStatement = (
   );
 
   Object.entries(whereColumnsByTable).forEach(([tableName, columns]) => {
-    if (columns.length < 2) {
+    if (columns.length < 2 || hasDisjunction) {
       return;
     }
 
@@ -382,7 +385,7 @@ const suggestIndexesForStatement = (
       ...orderedColumnNames,
     ]);
 
-    if (whereColumnNames.length === 0 || orderedColumnNames.length === 0) {
+    if (whereColumnNames.length === 0 || orderedColumnNames.length === 0 || hasDisjunction) {
       return;
     }
 
