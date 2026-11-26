@@ -1,0 +1,9 @@
+# Engineering audit — 2026-11-26
+
+Baseline `3323249` (web/CLI 0.8.0, VS Code 0.3.0); predecessor `d398c41` verified locally. Baseline tests: 89. Current tests: 106. Typecheck and production build pass.
+
+The analyzer previously stopped at a first matching statement and inferred source locations by searching for duplicate text. The initial P0 commit fixed multiple statements and source positions; subsequent changes cover selected repeated occurrences in a single statement. Masked text and structural batch boundaries reduce false positives in tested dialect examples, but lexical and regular-expression rules are not an AST. Procedural SQL, deeply nested scopes, identifier variants and semantic safety remain risks. A zero-findings result means only that active rules did not match; it is not proof of safety or performance. Cost figures in PostgreSQL and SQL Server plans are optimizer estimates, not milliseconds.
+
+The SQL Server Showplan parser is an initial bounded XML reader, not a full plan interpreter. It never executes SQL. It rejects DTDs, malformed/foreign namespace XML and oversized input, and preserves per-thread counters rather than silently combining them. Its sample plans are representative synthetic fixtures; actual database-generated .sqlplan files and version compatibility have not yet been established. The parser does not derive a causal performance diagnosis from an operator name alone.
+
+Browser tests were attempted but blocked by environment access: cloud browser cannot reach localhost, local Chromium lacks its executable, and browser download returned 403. No end-to-end browser or packaged VSIX success is claimed. Continue with actual plan fixtures, a proper dialect parser for high-risk rules, accessibility and translation review, and a browser environment before production release.

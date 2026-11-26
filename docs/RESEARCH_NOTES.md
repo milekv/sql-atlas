@@ -1,0 +1,5 @@
+# Presentation research notes
+
+Reviewed current README and onboarding patterns in [SQLFluff](https://github.com/sqlfluff/sqlfluff), [SQLGlot](https://github.com/tobymao/sqlglot), [DuckDB](https://github.com/duckdb/duckdb), [DBeaver](https://github.com/dbeaver/dbeaver), [pgAdmin](https://github.com/pgadmin-org/pgadmin4), [PEV2](https://github.com/dalibo/pev2), [Bruno](https://github.com/usebruno/bruno), [Hoppscotch](https://github.com/hoppscotch/hoppscotch), [Biome](https://github.com/biomejs/biome) and [Ruff](https://github.com/astral-sh/ruff). The useful recurring pattern is a precise one-line scope, a command that works immediately, clear links to deeper docs and visible limits. SQL Atlas uses its own visual identity; this is not a copy of their branding or documentation.
+
+The READMEs show a runnable CLI example first, put the interface matrix and installation paths near the top, and link to source-specific limits. The currently published `0.8.0` is separated from unreleased source behavior. Current application screenshots were captured from local Chromium; a VS Code extension screenshot still requires a running VS Code test environment.
