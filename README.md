@@ -8,7 +8,7 @@
 
 [![CI](https://github.com/milekv/sql-atlas/actions/workflows/ci.yml/badge.svg)](https://github.com/milekv/sql-atlas/actions/workflows/ci.yml) [![npm](https://img.shields.io/npm/v/sql-atlas)](https://www.npmjs.com/package/sql-atlas) [![MIT](https://img.shields.io/badge/license-MIT-249b73)](LICENSE)
 
-> **Release boundary:** npm, Marketplace, the extension and the live demo currently reflect published releases. The SQL Server plan improvements, Monaco diagnostics and other changes documented below are in this source branch until a new release is built and published. No 1.0 release is claimed.
+> **Release boundary:** The public browser demo reflects this source on `main`. npm, the VS Code Marketplace extension and the tagged GitHub Action remain at their published 0.8.0 releases until separately published. No 1.0 release is claimed.
 
 ## Try it
 
@@ -16,7 +16,7 @@
 npx --yes sql-atlas@0.8.0 analyze examples/safe-query.sql --dialect postgresql
 ```
 
-Or open the [browser demo](https://milekv.github.io/sql-atlas/) and paste a query. For the features in this source branch, run `npm ci && npm run dev` and open the local URL printed by Vite.
+Or open the [browser demo](https://milekv.github.io/sql-atlas/) and paste a query. For local development, run `npm ci && npm run dev` and open the URL printed by Vite.
 
 ```sql
 SELECT * FROM users WHERE LOWER(email) LIKE '%example.com';
@@ -26,7 +26,7 @@ The analyzer reports the matched ranges, explains why a pattern warrants review 
 
 ## In the browser
 
-These screenshots were captured from the current source running locally in Chromium. They show features that have not yet been deployed to the public demo.
+These screenshots were captured from the current source running locally in Chromium. The same features are available in the public browser demo.
 
 | Query diagnostics and source navigation | SQL Server Showplan XML |
 | --- | --- |
