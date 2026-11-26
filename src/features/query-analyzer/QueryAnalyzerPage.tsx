@@ -135,6 +135,11 @@ export const QueryAnalyzerPage = () => {
     () => getTopRecommendations(latestAnalysis),
     [latestAnalysis],
   );
+  const [navigation, setNavigation] = useState<{ start: number; end: number; nonce: number }>();
+  const navigateToFinding = (finding: AnalyzerFinding) => {
+    if (!finding.location || latestAnalysis?.sql !== analyzerSql) return;
+    setNavigation({ start: finding.location.start, end: finding.location.end, nonce: Date.now() + Math.random() });
+  };
 
   const runAnalysis = (query = analyzerSql, dialect = analyzerDialect) => {
     if (!query.trim()) {
@@ -214,7 +219,14 @@ export const QueryAnalyzerPage = () => {
               </Button>
             </div>
           </div>
-          <SqlEditor value={analyzerSql} onChange={setAnalyzerSql} />
+          <SqlEditor
+            value={analyzerSql}
+            onChange={(value) => { setAnalyzerSql(value); setLatestAnalysis(null); }}
+            findings={latestAnalysis?.findings}
+            analyzedSql={latestAnalysis?.sql}
+            translate={t}
+            navigation={navigation}
+          />
           <Card className="p-4 atlas-animate-in">
             <h3 className="mb-3 text-sm font-semibold">{t("analyzer.samples")}</h3>
             <div className="grid gap-2 md:grid-cols-2">
@@ -248,7 +260,7 @@ export const QueryAnalyzerPage = () => {
           ) : (
             <>
               <ScoreCard analysis={latestAnalysis} breakdownData={breakdownData} />
-              <TopRecommendations findings={topRecommendations} />
+              <TopRecommendations findings={topRecommendations} onNavigate={navigateToFinding} />
 
               <OptimizationStoryCard
                 steps={latestAnalysis.optimizationStory.steps}
@@ -302,6 +314,7 @@ export const QueryAnalyzerPage = () => {
                   findings={group.findings}
                   language={language}
                   onOpenKnowledge={() => setPage("knowledge-base")}
+                  onNavigate={navigateToFinding}
                 />
               ))}
 
@@ -451,7 +464,7 @@ const AnimatedScore = ({ value }: { value: number }) => {
   return <>{displayValue}</>;
 };
 
-const TopRecommendations = ({ findings }: { findings: AnalyzerFinding[] }) => {
+const TopRecommendations = ({ findings, onNavigate }: { findings: AnalyzerFinding[]; onNavigate: (finding: AnalyzerFinding) => void }) => {
   const { t } = useApp();
 
   return (
@@ -470,7 +483,7 @@ const TopRecommendations = ({ findings }: { findings: AnalyzerFinding[] }) => {
         <div className="space-y-2">
           {findings.map((finding, index) => (
             <div
-              key={finding.id}
+              key={`${finding.id}-${finding.location?.start ?? index}`}
               className="atlas-stagger-item rounded-md border border-atlas-border bg-atlas-panelStrong p-3 transition hover:border-atlas-cyan/50"
               style={{ animationDelay: `${index * 55}ms` }}
             >
@@ -485,7 +498,12 @@ const TopRecommendations = ({ findings }: { findings: AnalyzerFinding[] }) => {
                   -{finding.scoreImpact}
                 </span>
               </div>
-              <p className="mt-2 font-medium">{t(finding.titleKey)}</p>
+              <button
+                type="button"
+                onClick={() => onNavigate(finding)}
+                className="mt-2 text-left font-medium text-atlas-text underline-offset-4 hover:text-atlas-cyan hover:underline focus-visible:rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-atlas-cyan"
+                aria-label={`${t(finding.titleKey)}, ${finding.location?.line ?? 1}:${finding.location?.column ?? 1}`}
+              >{t(finding.titleKey)}{finding.location ? ` · ${finding.location.line}:${finding.location.column}` : ""}</button>
               <p className="mt-1 text-sm leading-6 text-atlas-muted">
                 {t(finding.suggestionKey)}
               </p>
@@ -818,12 +836,14 @@ const IssueGroup = ({
   findings,
   language,
   onOpenKnowledge,
+  onNavigate,
 }: {
   title: string;
   severity: Exclude<AnalyzerSeverity, "success">;
   findings: AnalyzerFinding[];
   language: "en" | "pl";
   onOpenKnowledge: () => void;
+  onNavigate: (finding: AnalyzerFinding) => void;
 }) => {
   const { t } = useApp();
 
@@ -839,13 +859,17 @@ const IssueGroup = ({
       </div>
       {findings.map((finding, index) => (
         <article
-          key={finding.id}
+          key={`${finding.id}-${finding.location?.start ?? index}`}
           className="atlas-stagger-item rounded-md border border-atlas-border bg-atlas-panelStrong p-4"
           style={{ animationDelay: `${index * 50}ms` }}
         >
           <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
             <div>
-              <h4 className="font-semibold">{t(finding.titleKey)}</h4>
+              <h4 className="font-semibold">
+                <button type="button" onClick={() => onNavigate(finding)} className="text-left hover:text-atlas-cyan hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-atlas-cyan">
+                  {t(finding.titleKey)}{finding.location ? ` · ${finding.location.line}:${finding.location.column}` : ""}
+                </button>
+              </h4>
               <p className="mt-1 text-sm leading-6 text-atlas-muted">
                 {t(finding.explanationKey)}
               </p>
