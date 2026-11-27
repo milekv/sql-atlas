@@ -2,13 +2,11 @@
 
 # SQL Atlas
 
-**Znajdź problemy w zapytaniu i sprawdź jego plan wykonania.** SQL Atlas oferuje lokalną diagnostykę w VS Code, CI, terminalu i przeglądarce oraz przegląd planów PostgreSQL, SQL Server i Oracle. Nie wymaga połączenia z bazą ani konta w usłudze AI.
+**Analiza SQL i przegląd planów wykonania bez połączenia z bazą.** Sprawdzaj zapytania w VS Code, CI, terminalu lub przeglądarce. Importuj plany PostgreSQL, SQL Server i Oracle, aby zobaczyć dane zgłoszone przez bazę.
 
 [English](README.md) · [Polski](README.pl.md) · [Demo](https://milekv.github.io/sql-atlas/) · [npm](https://www.npmjs.com/package/sql-atlas) · [VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=Milosz.sql-atlas) · [GitHub Action](https://github.com/marketplace/actions/sql-atlas)
 
 [![CI](https://github.com/milekv/sql-atlas/actions/workflows/ci.yml/badge.svg)](https://github.com/milekv/sql-atlas/actions/workflows/ci.yml) [![npm](https://img.shields.io/npm/v/sql-atlas)](https://www.npmjs.com/package/sql-atlas) [![MIT](https://img.shields.io/badge/license-MIT-249b73)](LICENSE)
-
-> **Stan wydań:** Demo w przeglądarce odpowiada gałęzi `main`. Opublikowany pakiet npm i tag GitHub Action mają wersję 0.8.0; rozszerzenie w VS Code Marketplace jest wydawane osobno i może być starsze od kodu w repozytorium. Przed użyciem nowej funkcji sprawdź wersję na danej platformie. Projekt nie jest wydaniem 1.0.
 
 ## Wypróbuj
 
@@ -22,7 +20,7 @@ Możesz też otworzyć [demo w przeglądarce](https://milekv.github.io/sql-atlas
 SELECT * FROM users WHERE LOWER(email) LIKE '%example.com';
 ```
 
-Analizator oznacza `SELECT *`, funkcję na filtrowanej kolumnie oraz znak `%` na początku wzorca. Każde trafienie prowadzi do miejsca w kodzie i wyjaśnia, co warto sprawdzić. To, czy zmiana warunku lub indeks pomoże, zależy od schematu, danych i planu wykonania. SQL Atlas **nie wykonuje** tego zapytania.
+Ten przykład uruchamia trzy reguły: `SELECT *`, `LOWER(email)` w warunku oraz początkowy znak `%` w `LIKE`. Kliknięcie problemu przenosi do odpowiedniego fragmentu SQL. Proponowane zmiany sprawdź względem schematu, danych i planu wykonania; SQL Atlas nie uruchamia zapytania.
 
 ## W przeglądarce
 
@@ -58,6 +56,8 @@ Wybór dialektu nie oznacza pełnego parsera wszystkich rozszerzeń danego silni
 
 ## Instalacja i integracja
 
+[Demo w przeglądarce](https://milekv.github.io/sql-atlas/) odpowiada gałęzi `main`. CLI w npm i GitHub Action są opublikowane w wersji 0.8.0. Rozszerzenie VS Code ma osobny cykl wydań; zakres funkcji sprawdź na stronie Marketplace.
+
 CLI:
 
 ```bash
@@ -88,7 +88,7 @@ jobs:
 
 Zainstaluj [SQL Atlas dla VS Code](https://marketplace.visualstudio.com/items?itemName=Milosz.sql-atlas) albo zbuduj rozszerzenie z kodu poleceniem `npm run package:vscode`. Przeglądarka, CLI, Action i rozszerzenie współdzielą reguły analizatora w repozytorium; publikowane wersje mogą być starsze.
 
-## Zastosowanie w pracy
+## Przykłady użycia
 
 - Kontroluj migracje w CI i przechodź do dokładnej pozycji znalezionego problemu.
 - Sprawdź podejrzany filtr dat lub szeroki odczyt, a potem porównaj alternatywne zapytania na reprezentatywnej bazie.
