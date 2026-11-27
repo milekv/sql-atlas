@@ -2,13 +2,13 @@
 
 # SQL Atlas
 
-**Local SQL diagnostics for editors, CI and the browser.** Inspect risky query patterns, follow findings to source locations and review PostgreSQL or SQL Server plans without sending SQL to an analysis service.
+**Find SQL issues where you write queries, then inspect the plan behind them.** SQL Atlas provides local diagnostics in VS Code, CI, the terminal and the browser, plus plan viewers for PostgreSQL, SQL Server and Oracle. No database connection or AI account is required.
 
 [English](README.md) · [Polski](README.pl.md) · [Live app](https://milekv.github.io/sql-atlas/) · [npm](https://www.npmjs.com/package/sql-atlas) · [VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=Milosz.sql-atlas) · [GitHub Action](https://github.com/marketplace/actions/sql-atlas)
 
 [![CI](https://github.com/milekv/sql-atlas/actions/workflows/ci.yml/badge.svg)](https://github.com/milekv/sql-atlas/actions/workflows/ci.yml) [![npm](https://img.shields.io/npm/v/sql-atlas)](https://www.npmjs.com/package/sql-atlas) [![MIT](https://img.shields.io/badge/license-MIT-249b73)](LICENSE)
 
-> **Release boundary:** The public browser demo reflects this source on `main`. npm, the VS Code Marketplace extension and the tagged GitHub Action remain at their published 0.8.0 releases until separately published. No 1.0 release is claimed.
+> **Release boundary:** The browser demo follows `main`. The published npm CLI and GitHub Action tag are 0.8.0; the VS Code Marketplace extension is published separately and may lag behind this source. Check each listing before relying on a newer source feature. This is not a 1.0 release.
 
 ## Try it
 
@@ -16,13 +16,13 @@
 npx --yes sql-atlas@0.8.0 analyze examples/safe-query.sql --dialect postgresql
 ```
 
-Or open the [browser demo](https://milekv.github.io/sql-atlas/) and paste a query. For local development, run `npm ci && npm run dev` and open the URL printed by Vite.
+Or open the [browser demo](https://milekv.github.io/sql-atlas/), choose a dialect and paste a query. Click a finding to move to its source line. Open **EXPLAIN visualizer** to import a plan; the viewer accepts PostgreSQL JSON, SQL Server Showplan XML or Oracle DBMS_XPLAN text. For local development, run `npm ci && npm run dev` and open the URL printed by Vite.
 
 ```sql
 SELECT * FROM users WHERE LOWER(email) LIKE '%example.com';
 ```
 
-The analyzer reports the matched ranges, explains why a pattern warrants review and offers possible next steps. `SELECT *`, a function on a filtered column and a leading wildcard may be relevant here. Whether an index or rewrite helps depends on the real schema, data and execution plan. SQL Atlas does **not** execute this query.
+The analyzer highlights `SELECT *`, the function applied to the filtered column and the leading wildcard. Each finding links to the SQL and explains what to inspect. Whether a different predicate or index helps depends on the real schema, data and execution plan. SQL Atlas **does not execute** this query.
 
 ## In the browser
 
@@ -34,11 +34,13 @@ These screenshots were captured from the current source running locally in Chrom
 
 [Index candidates](public/screenshots/index-advisor.png) · [PostgreSQL EXPLAIN](public/screenshots/postgresql-explain.png) · [Polish analyzer](public/screenshots/query-analyzer-pl.png)
 
+For a plan review, import the output of `EXPLAIN (ANALYZE, BUFFERS, FORMAT JSON)` in PostgreSQL, a SQL Server `.sqlplan` file, or the text returned by Oracle `DBMS_XPLAN.DISPLAY_CURSOR`. Select an operator to inspect the metrics and predicates **reported by that plan**. Estimated rows and actual rows are distinct; an estimated plan cannot supply runtime counters. The [plan guide](docs/PLAN_FORMATS.md) documents supported input and examples.
+
 ## What is available
 
 | Surface | Current behavior |
 | --- | --- |
-| Browser | Monaco findings and source navigation, index candidates, SQL knowledge base, PostgreSQL JSON EXPLAIN, SQL Server Showplan XML and STATISTICS IO/TIME import, PostgreSQL DDL visualization; English and Polish UI. |
+| Browser | Monaco findings and source navigation, index candidates, SQL knowledge base, PostgreSQL JSON EXPLAIN, SQL Server Showplan XML, Oracle DBMS_XPLAN text and separate STATISTICS IO/TIME import, PostgreSQL DDL visualization; English and Polish UI. |
 | CLI | Local file/stdin analysis; text, JSON, Markdown and SARIF; language, dialect and policy options. |
 | VS Code | Inline diagnostics, Problems panel, language setting, severity filtering and a file-level ignore quick fix. |
 | GitHub Action | SQL file annotations, job summary and fail thresholds for pull request workflows. |
@@ -84,16 +86,17 @@ jobs:
           fail-on: critical
 ```
 
-Install [SQL Atlas for VS Code](https://marketplace.visualstudio.com/items?itemName=Milosz.sql-atlas) or build the source extension with `npm run package:vscode`. The browser, CLI, Action and extension share the same analyzer rules in this repository; releases may lag behind this branch.
+Install [SQL Atlas for VS Code](https://marketplace.visualstudio.com/items?itemName=Milosz.sql-atlas) or build the source extension with `npm run package:vscode`. The browser, CLI, Action and extension share analyzer code in this repository; published versions may lag behind this branch.
 
 ## Professional workflows
 
 - Review migration files in CI and inspect findings at exact source positions.
 - Examine suspicious date predicates or broad reads, then compare alternative SQL on a representative database.
 - Import a PostgreSQL `EXPLAIN (ANALYZE, BUFFERS, FORMAT JSON)` result or SQL Server `.sqlplan` into the local browser tool.
+- Read an Oracle `DBMS_XPLAN` text plan and inspect its operator predicates and notes; confirm conclusions against the database and workload.
 - Paste SQL Server `SET STATISTICS IO/TIME` messages as separate measurements; do not assume an imported plan and messages are from the same execution.
 
-The [PostgreSQL date filter benchmark](benchmarks/postgresql/README.md) includes a reproducible server scenario and a [measured PGlite WASM run](benchmarks/postgresql/pglite-0.6.0-measurement.json) with full result equality checked first. The [SQL Server scenario](benchmarks/sqlserver/README.md) is ready to run on a disposable instance; no SQL Server timings are reported.
+The [PostgreSQL date filter benchmark](benchmarks/postgresql/README.md) includes a reproducible server scenario and a [measured PGlite WASM run](benchmarks/postgresql/pglite-0.6.0-measurement.json) on 200,000 synthetic rows. Both query variants returned the same multiset of 49,894 matching IDs in that run; six plans and timings were recorded in the JSON file. PGlite is embedded PostgreSQL, so these timings do not represent a production server. The [SQL Server scenario](benchmarks/sqlserver/README.md) is ready to run on a disposable instance; no SQL Server timings are reported.
 
 ## Privacy and scope
 
@@ -112,7 +115,7 @@ flowchart TD
   P["PostgreSQL JSON / SQL Server XML + IO/TIME / Oracle DBMS_XPLAN"] --> W
 ```
 
-Node.js 20+ and npm are required. Run `npm ci`, `npm test`, `npm run typecheck` and `npm run build`. The browser code lives in `src/features`, shared parsers and rules in `src/core`, integration adapters in `src/{cli,action,vscode}`, and tests in `src/tests`. See [architecture](ARCHITECTURE.md), [contributing](CONTRIBUTING.md), [roadmap](ROADMAP.md), [security](SECURITY.md) and [release process](docs/RELEASING.md).
+Node.js 20+ and npm are required. Run `npm ci`, `npm test`, `npm run typecheck` and `npm run build`. The browser code lives in `src/features`, shared parsers and rules in `src/core`, integration adapters in `src/{cli,action,vscode}`, and tests in `src/tests`. See [architecture](ARCHITECTURE.md), [contributing](CONTRIBUTING.md), [roadmap](ROADMAP.md), [security](SECURITY.md), [integration guide](docs/INTEGRATIONS.md) and [release process](docs/RELEASING.md). For a bug report, include a minimal SQL or plan fixture with sensitive data removed, the dialect, the expected result and the actual result.
 
 ## License
 
