@@ -2,13 +2,13 @@
 
 # SQL Atlas
 
-**Lokalna diagnostyka SQL w edytorze, CI i przeglądarce.** Sprawdzaj ryzykowne wzorce zapytań, przechodź do miejsca problemu w kodzie oraz przeglądaj plany PostgreSQL i SQL Server bez wysyłania SQL do usługi analizującej.
+**Znajdź problemy w zapytaniu i sprawdź jego plan wykonania.** SQL Atlas oferuje lokalną diagnostykę w VS Code, CI, terminalu i przeglądarce oraz przegląd planów PostgreSQL, SQL Server i Oracle. Nie wymaga połączenia z bazą ani konta w usłudze AI.
 
 [English](README.md) · [Polski](README.pl.md) · [Demo](https://milekv.github.io/sql-atlas/) · [npm](https://www.npmjs.com/package/sql-atlas) · [VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=Milosz.sql-atlas) · [GitHub Action](https://github.com/marketplace/actions/sql-atlas)
 
 [![CI](https://github.com/milekv/sql-atlas/actions/workflows/ci.yml/badge.svg)](https://github.com/milekv/sql-atlas/actions/workflows/ci.yml) [![npm](https://img.shields.io/npm/v/sql-atlas)](https://www.npmjs.com/package/sql-atlas) [![MIT](https://img.shields.io/badge/license-MIT-249b73)](LICENSE)
 
-> **Stan wydania:** Publiczne demo w przeglądarce odpowiada kodowi z gałęzi `main`. Pakiet npm, rozszerzenie z VS Code Marketplace oraz wersja GitHub Action oznaczona tagiem pozostają przy opublikowanym wydaniu 0.8.0 do czasu osobnej publikacji. Projekt nie jest oznaczony jako 1.0.
+> **Stan wydań:** Demo w przeglądarce odpowiada gałęzi `main`. Opublikowany pakiet npm i tag GitHub Action mają wersję 0.8.0; rozszerzenie w VS Code Marketplace jest wydawane osobno i może być starsze od kodu w repozytorium. Przed użyciem nowej funkcji sprawdź wersję na danej platformie. Projekt nie jest wydaniem 1.0.
 
 ## Wypróbuj
 
@@ -16,13 +16,13 @@
 npx --yes sql-atlas@0.8.0 analyze examples/safe-query.sql --dialect postgresql
 ```
 
-Możesz też otworzyć [demo w przeglądarce](https://milekv.github.io/sql-atlas/) i wkleić zapytanie. Aby rozwijać aplikację lokalnie, wykonaj `npm ci && npm run dev` i otwórz adres pokazany przez Vite.
+Możesz też otworzyć [demo w przeglądarce](https://milekv.github.io/sql-atlas/), wybrać dialekt i wkleić zapytanie. Kliknięcie problemu przenosi do odpowiedniej linii kodu. W **Wizualizatorze EXPLAIN** zaimportujesz plan PostgreSQL w JSON, SQL Server w Showplan XML albo tekst Oracle DBMS_XPLAN. Aby uruchomić aplikację lokalnie, wykonaj `npm ci && npm run dev` i otwórz adres pokazany przez Vite.
 
 ```sql
 SELECT * FROM users WHERE LOWER(email) LIKE '%example.com';
 ```
 
-Analizator pokazuje miejsce trafienia reguły, wyjaśnia, co warto sprawdzić, i proponuje dalsze kroki. W tym przykładzie znaczenie mogą mieć `SELECT *`, funkcja na filtrowanej kolumnie oraz wildcard na początku wzorca. To, czy indeks lub zmiana zapytania pomoże, zależy od schematu, danych i planu wykonania. SQL Atlas **nie wykonuje** tego zapytania.
+Analizator oznacza `SELECT *`, funkcję na filtrowanej kolumnie oraz znak `%` na początku wzorca. Każde trafienie prowadzi do miejsca w kodzie i wyjaśnia, co warto sprawdzić. To, czy zmiana warunku lub indeks pomoże, zależy od schematu, danych i planu wykonania. SQL Atlas **nie wykonuje** tego zapytania.
 
 ## W przeglądarce
 
@@ -34,11 +34,13 @@ Zrzuty wykonano w Chromium z bieżącej wersji kodu uruchomionej lokalnie. Te sa
 
 [Kandydaci na indeksy](public/screenshots/index-advisor.png) · [PostgreSQL EXPLAIN](public/screenshots/postgresql-explain.png) · [Angielski analizator](public/screenshots/query-analyzer.png)
 
+Aby przeanalizować plan, wczytaj wynik `EXPLAIN (ANALYZE, BUFFERS, FORMAT JSON)` z PostgreSQL, plik `.sqlplan` z SQL Server albo tekst zwrócony przez Oracle `DBMS_XPLAN.DISPLAY_CURSOR`. Wybierz operator, aby zobaczyć metryki i predykaty **obecne w planie**. Liczba wierszy oszacowana przez optymalizator i liczba rzeczywiście odczytanych wierszy to różne dane; plan szacowany nie zawiera liczników wykonania. [Przewodnik po planach](docs/PLAN_FORMATS.md) opisuje obsługiwane dane i przykłady.
+
 ## Dostępne narzędzia
 
 | Miejsce użycia | Działanie w bieżącym kodzie |
 | --- | --- |
-| Przeglądarka | Diagnostyka Monaco z nawigacją do kodu, kandydaci na indeksy, baza wiedzy, PostgreSQL EXPLAIN JSON, SQL Server Showplan XML i import STATISTICS IO/TIME, wizualizacja DDL PostgreSQL; interfejs polski i angielski. |
+| Przeglądarka | Diagnostyka Monaco z nawigacją do kodu, kandydaci na indeksy, baza wiedzy, PostgreSQL EXPLAIN JSON, SQL Server Showplan XML, tekst Oracle DBMS_XPLAN i osobny import STATISTICS IO/TIME, wizualizacja DDL PostgreSQL; interfejs polski i angielski. |
 | CLI | Lokalna analiza pliku lub stdin; raporty tekstowe, JSON, Markdown i SARIF; ustawienia języka, dialektu i progów. |
 | VS Code | Diagnostyka w edytorze i panelu Problemy, wybór języka, filtrowanie ważności, szybka poprawka wyciszająca regułę w pliku. |
 | GitHub Action | Adnotacje przy plikach SQL, podsumowanie zadania i progi powodujące niepowodzenie kontroli PR. |
@@ -91,9 +93,10 @@ Zainstaluj [SQL Atlas dla VS Code](https://marketplace.visualstudio.com/items?it
 - Kontroluj migracje w CI i przechodź do dokładnej pozycji znalezionego problemu.
 - Sprawdź podejrzany filtr dat lub szeroki odczyt, a potem porównaj alternatywne zapytania na reprezentatywnej bazie.
 - Importuj wynik PostgreSQL `EXPLAIN (ANALYZE, BUFFERS, FORMAT JSON)` lub plik SQL Server `.sqlplan` do lokalnej aplikacji.
+- Czytaj tekstowy plan Oracle `DBMS_XPLAN`, w tym predykaty i uwagi do operatorów; wnioski potwierdź w bazie i na reprezentatywnym obciążeniu.
 - Wklej komunikaty SQL Server `SET STATISTICS IO/TIME` jako osobne pomiary. Nie zakładaj, że pochodzą z tego samego wykonania co zaimportowany plan.
 
-[Benchmark filtra dat PostgreSQL](benchmarks/postgresql/README.md) zawiera odtwarzalny scenariusz serwerowy oraz [rzeczywisty pomiar w PGlite WASM](benchmarks/postgresql/pglite-0.6.0-measurement.json) po sprawdzeniu zgodności wyników. [Scenariusz SQL Server](benchmarks/sqlserver/README.md) jest przygotowany dla testowej instancji; nie ma jeszcze pomiarów SQL Server.
+[Benchmark filtra dat PostgreSQL](benchmarks/postgresql/README.md) zawiera odtwarzalny scenariusz serwerowy oraz [pomiar w PGlite WASM](benchmarks/postgresql/pglite-0.6.0-measurement.json) na 200 000 syntetycznych wierszy. W tym pomiarze oba warianty zapytania zwróciły ten sam zbiór z uwzględnieniem powtórzeń: 49 894 identyfikatory; zapisano sześć planów i pomiarów czasu. PGlite jest osadzonym PostgreSQL, więc te czasy nie opisują wydajności serwera produkcyjnego. [Scenariusz SQL Server](benchmarks/sqlserver/README.md) jest przygotowany dla testowej instancji; nie ma jeszcze pomiarów SQL Server.
 
 ## Prywatność i ograniczenia
 
@@ -112,7 +115,7 @@ flowchart TD
   P["PostgreSQL JSON / SQL Server XML + IO/TIME / Oracle DBMS_XPLAN"] --> W
 ```
 
-Wymagane są Node.js 20+ i npm. Uruchom `npm ci`, `npm test`, `npm run typecheck` i `npm run build`. Aplikacja przeglądarkowa jest w `src/features`, wspólne parsery i reguły w `src/core`, adaptery w `src/{cli,action,vscode}`, a testy w `src/tests`. Zobacz [architekturę](ARCHITECTURE.md), [zasady współtworzenia](CONTRIBUTING.md), [plan rozwoju](ROADMAP.md), [bezpieczeństwo](SECURITY.md) i [proces wydania](docs/RELEASING.md).
+Wymagane są Node.js 20+ i npm. Uruchom `npm ci`, `npm test`, `npm run typecheck` i `npm run build`. Aplikacja przeglądarkowa jest w `src/features`, wspólne parsery i reguły w `src/core`, adaptery w `src/{cli,action,vscode}`, a testy w `src/tests`. Zobacz [architekturę](ARCHITECTURE.md), [zasady współtworzenia](CONTRIBUTING.md), [plan rozwoju](ROADMAP.md), [bezpieczeństwo](SECURITY.md), [przewodnik integracji](docs/INTEGRATIONS.md) i [proces wydania](docs/RELEASING.md). Zgłoszenie błędu powinno zawierać minimalny przykład SQL lub plan bez danych poufnych, dialekt oraz wynik oczekiwany i otrzymany.
 
 ## Licencja
 
