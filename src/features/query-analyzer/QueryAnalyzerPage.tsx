@@ -950,7 +950,7 @@ const SuggestedIndexesCard = ({
             >
               <div className="mb-2 flex items-center justify-between gap-2">
                 <div className="flex flex-wrap gap-2">
-                  <Badge tone="cyan">{suggestion.source}</Badge>
+                  <Badge tone="cyan">{t(`indexSource.${suggestion.source}` as TranslationKey)}</Badge>
                   <Badge tone="neutral">
                     {t(`confidence.${suggestion.confidence}` as TranslationKey)}
                   </Badge>
