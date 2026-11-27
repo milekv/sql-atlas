@@ -49,7 +49,7 @@ The Showplan importer displays operator trees, estimates, reported per-thread ru
 | --- | --- | --- |
 | PostgreSQL | Yes, heuristic | JSON EXPLAIN |
 | SQL Server / T-SQL | Yes, heuristic | Showplan XML and separate IO/TIME messages |
-| Oracle | Yes, heuristic | Not yet available |
+| Oracle | Yes, heuristic | DBMS_XPLAN text import (one plan) |
 | MySQL, SQLite, generic | Yes, heuristic | Not yet available |
 
 Dialect selection does not imply full parsing of every vendor extension. The rule engine uses lexical masking and targeted patterns; complex procedural SQL and nested scopes still require manual review.
@@ -93,7 +93,7 @@ Install [SQL Atlas for VS Code](https://marketplace.visualstudio.com/items?itemN
 - Import a PostgreSQL `EXPLAIN (ANALYZE, BUFFERS, FORMAT JSON)` result or SQL Server `.sqlplan` into the local browser tool.
 - Paste SQL Server `SET STATISTICS IO/TIME` messages as separate measurements; do not assume an imported plan and messages are from the same execution.
 
-The [PostgreSQL date filter benchmark](benchmarks/postgresql/README.md) provides repeatable data, a result-equivalence check and measurement commands. No benchmark timings are reported without an actual database run.
+The [PostgreSQL date filter benchmark](benchmarks/postgresql/README.md) includes a reproducible server scenario and a [measured PGlite WASM run](benchmarks/postgresql/pglite-0.6.0-measurement.json) with full result equality checked first. The [SQL Server scenario](benchmarks/sqlserver/README.md) is ready to run on a disposable instance; no SQL Server timings are reported.
 
 ## Privacy and scope
 
@@ -109,7 +109,7 @@ flowchart TD
   C --> V["VS Code"]
   C --> L["CLI and reports"]
   C --> A["GitHub Action"]
-  P["PostgreSQL JSON / SQL Server XML + IO/TIME"] --> W
+  P["PostgreSQL JSON / SQL Server XML + IO/TIME / Oracle DBMS_XPLAN"] --> W
 ```
 
 Node.js 20+ and npm are required. Run `npm ci`, `npm test`, `npm run typecheck` and `npm run build`. The browser code lives in `src/features`, shared parsers and rules in `src/core`, integration adapters in `src/{cli,action,vscode}`, and tests in `src/tests`. See [architecture](ARCHITECTURE.md), [contributing](CONTRIBUTING.md), [roadmap](ROADMAP.md), [security](SECURITY.md) and [release process](docs/RELEASING.md).

@@ -1,6 +1,6 @@
 import {
   splitSqlStatements,
-  stripSqlComments,
+  maskSqlStructure,
   uniqueValues,
 } from "../analyzer/analyzerUtils";
 import type { SqlDialect } from "../analyzer/types";
@@ -32,7 +32,15 @@ const reservedWords = new Set([
 
 const educationalWarning: LocalizedText = {
   en: "Verify with real data and EXPLAIN ANALYZE. Indexes can speed up SELECT queries, but may slow down INSERT, UPDATE, DELETE and consume storage.",
-  pl: "Zweryfikuj na realnych danych przez EXPLAIN ANALYZE. Indeksy moga przyspieszac SELECT, ale spowalniac INSERT, UPDATE, DELETE i zajmowac miejsce.",
+  pl: "Zweryfikuj na rzeczywistych danych przez EXPLAIN ANALYZE. Indeksy mogą przyspieszać SELECT, ale spowalniać INSERT, UPDATE i DELETE oraz zajmować miejsce.",
+};
+const sourceLabels: Record<IndexSuggestionSource, LocalizedText> = {
+  where: { en: "filter", pl: "filtrowania" },
+  join: { en: "join", pl: "łączenia tabel" },
+  "order-by": { en: "sorting", pl: "sortowania" },
+  "group-by": { en: "grouping", pl: "grupowania" },
+  functional: { en: "expression filter", pl: "filtrowania wyrażeniem" },
+  composite: { en: "combined filter and sort", pl: "filtra i sortowania" },
 };
 
 const sanitizeIdentifier = (value: string): string =>
@@ -79,8 +87,8 @@ const createSuggestion = ({
     source,
     sqlSnippet: `CREATE INDEX ${indexName}\nON ${tableName} (${target});`,
     reason: {
-      en: `Candidate index for ${source.replace("-", " ")} access on ${tableName}.`,
-      pl: `Kandydat na indeks dla ${source.replace("-", " ")} w tabeli ${tableName}.`,
+      en: `Candidate index for ${sourceLabels[source].en} on ${tableName}.`,
+      pl: `Kandydat na indeks do ${sourceLabels[source].pl} w tabeli ${tableName}.`,
     },
     confidence,
     relatedQueryFragment,
@@ -90,21 +98,25 @@ const createSuggestion = ({
 
 const extractTableReferences = (sql: string): TableReference[] => {
   const refs: TableReference[] = [];
+  const cteNames = new Set([...sql.matchAll(/\b(?:with|,)\s*([a-zA-Z_]\w*)\s+as\s*\(/gi)]
+    .map((match) => sanitizeIdentifier(match[1])));
   const pattern =
     /\b(?:from|join)\s+([a-zA-Z_][\w."]*)\s*(?:as\s+)?([a-zA-Z_][\w"]*)?/gi;
 
   for (const match of sql.matchAll(pattern)) {
+    // The current DDL template cannot preserve schema-qualified or quoted names.
+    if (match[1].includes(".") || match[1].includes('"')) continue;
     const tableName = sanitizeIdentifier(match[1]);
     const rawAlias = match[2] ? sanitizeIdentifier(match[2]) : tableName;
     const alias = reservedWords.has(rawAlias) ? tableName : rawAlias;
-    refs.push({ name: tableName, alias });
+    if (!cteNames.has(tableName)) refs.push({ name: tableName, alias });
   }
 
   return refs;
 };
 
 const getDefaultTable = (tables: TableReference[]): string =>
-  tables[0]?.name ?? "table_name";
+  tables.length === 1 ? tables[0].name : "table_name";
 
 const resolveTableName = (
   aliasOrTable: string | undefined,
@@ -117,7 +129,7 @@ const resolveTableName = (
   const normalized = sanitizeIdentifier(aliasOrTable);
   return (
     tables.find((table) => table.alias === normalized || table.name === normalized)
-      ?.name ?? normalized
+      ?.name ?? "table_name"
   );
 };
 
@@ -206,6 +218,7 @@ const extractClauseColumns = (
     .split(",")
     .map((column) => column.replace(/\basc\b|\bdesc\b/gi, "").trim())
     .filter(Boolean)
+    .filter((column) => /^(?:[a-zA-Z_]\w*\.)?[a-zA-Z_]\w*$/.test(column))
     .map((column) => toColumnReference(column, column, tables));
 };
 
@@ -215,9 +228,10 @@ const extractFunctionalColumns = (
 ): Array<ColumnReference & { expression: string }> => {
   const columns: Array<ColumnReference & { expression: string }> = [];
   const pattern =
-    /\b(lower|upper|trim|date)\s*\(\s*((?:[a-zA-Z_][\w"]*\.)?[a-zA-Z_][\w"]*)\s*\)/gi;
+    /\b(lower|upper|trim|date)\s*\(\s*((?:[a-zA-Z_][\w"]*\.)?[a-zA-Z_][\w"]*)\s*\)\s*(?:=|<>|!=|<=|>=|<|>|\blike\b|\bin\b)/gi;
 
-  for (const match of sql.matchAll(pattern)) {
+  const where = sql.match(/\bwhere\b([\s\S]*?)(?:\bgroup\s+by\b|\border\s+by\b|\bhaving\b|\blimit\b|$)/i)?.[1] ?? "";
+  for (const match of where.matchAll(pattern)) {
     const column = toColumnReference(match[2], match[0], tables);
     columns.push({
       ...column,
@@ -245,14 +259,25 @@ const suggestIndexesForStatement = (
   sql: string,
   _dialect: SqlDialect = "postgresql",
 ): IndexSuggestion[] => {
-  const cleanedSql = stripSqlComments(sql);
+  // Mask values/comments as well as quoted identifiers we cannot safely resolve.
+  const cleanedSql = maskSqlStructure(sql);
   const tables = extractTableReferences(cleanedSql);
+  if (tables.length === 0) return [];
+  const physicalTables = new Set(tables.map((table) => table.name));
+  // An unqualified column in a CTE query may refer to a derived relation.
+  const scopedTables = /\bwith\s+[a-zA-Z_]\w*\s+as\s*\(/i.test(cleanedSql)
+    ? [...tables, { name: "__derived", alias: "__derived" }] : tables;
   const suggestions: IndexSuggestion[] = [];
-  const whereColumns = extractWhereColumns(cleanedSql, tables);
-  const joinColumns = extractJoinColumns(cleanedSql, tables);
-  const orderColumns = extractClauseColumns(cleanedSql, "order by", tables);
-  const groupColumns = extractClauseColumns(cleanedSql, "group by", tables);
-  const functionalColumns = extractFunctionalColumns(cleanedSql, tables);
+  const known = <T extends ColumnReference>(columns: T[]): T[] => columns.filter((column) =>
+    physicalTables.has(column.tableName) && column.columnName.length > 0);
+  const whereColumns = known(extractWhereColumns(cleanedSql, scopedTables));
+  const joinColumns = known(extractJoinColumns(cleanedSql, scopedTables));
+  const orderColumns = known(extractClauseColumns(cleanedSql, "order by", scopedTables));
+  const groupColumns = known(extractClauseColumns(cleanedSql, "group by", scopedTables));
+  const functionalColumns = known(extractFunctionalColumns(cleanedSql, scopedTables));
+  const hasDisjunction = /\bor\b/i.test(cleanedSql.match(
+    /\bwhere\b([\s\S]*?)(?:\bgroup\s+by\b|\border\s+by\b|\bhaving\b|\blimit\b|$)/i,
+  )?.[1] ?? "");
 
   whereColumns.forEach((column) => {
     suggestions.push(
@@ -260,7 +285,7 @@ const suggestIndexesForStatement = (
         tableName: column.tableName,
         columns: [column.columnName],
         source: "where",
-        confidence: "high",
+        confidence: "medium",
         relatedQueryFragment: column.fragment,
       }),
     );
@@ -272,7 +297,7 @@ const suggestIndexesForStatement = (
         tableName: column.tableName,
         columns: [column.columnName],
         source: "join",
-        confidence: "high",
+        confidence: "medium",
         relatedQueryFragment: column.fragment,
       }),
     );
@@ -327,7 +352,7 @@ const suggestIndexesForStatement = (
   );
 
   Object.entries(whereColumnsByTable).forEach(([tableName, columns]) => {
-    if (columns.length < 2) {
+    if (columns.length < 2 || hasDisjunction) {
       return;
     }
 
@@ -360,7 +385,7 @@ const suggestIndexesForStatement = (
       ...orderedColumnNames,
     ]);
 
-    if (whereColumnNames.length === 0 || orderedColumnNames.length === 0) {
+    if (whereColumnNames.length === 0 || orderedColumnNames.length === 0 || hasDisjunction) {
       return;
     }
 
@@ -382,7 +407,7 @@ export const suggestIndexes = (
   sql: string,
   dialect: SqlDialect = "postgresql",
 ): IndexSuggestion[] =>
-  dedupeSuggestions(
+  dialect !== "postgresql" ? [] : dedupeSuggestions(
     splitSqlStatements(sql).flatMap((statement) =>
       suggestIndexesForStatement(statement, dialect),
     ),

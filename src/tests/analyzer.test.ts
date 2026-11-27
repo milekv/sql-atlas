@@ -266,6 +266,14 @@ describe("SQL analyzer rules", () => {
     expectRule("SELECT id FROM products ORDER BY random() LIMIT 1;", "order-by-random");
   });
 
+  it("does not offer non-equivalent sampling or dialect-incompatible index DDL", () => {
+    const pg = analyzeQuery("SELECT id FROM products ORDER BY random() LIMIT 1;", "postgresql");
+    expect(pg.findings.find((finding) => finding.id === "order-by-random")?.suggestedSqlSnippet).toBeUndefined();
+    const tsql = analyzeQuery("SELECT id FROM users WHERE LOWER(email) LIKE '%test';", "sqlserver");
+    expect(tsql.findings.filter((finding) => ["leading-wildcard-like", "function-in-where"].includes(finding.id))
+      .every((finding) => finding.suggestedSqlSnippet === undefined)).toBe(true);
+  });
+
   it("detects destructive DROP TABLE", () => {
     expectRule("DROP TABLE users;", "unsafe-drop-table");
   });

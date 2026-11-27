@@ -15,8 +15,9 @@ export const leadingWildcardLikeRule: AnalyzerRule = {
       statementOffset: offset,
       scoreImpact: 12,
       relatedTopicIds: ["functional-indexes", "query-optimization-basics"],
-      suggestedSqlSnippet:
-        "CREATE INDEX idx_table_column_trgm\nON table_name USING gin (column_name gin_trgm_ops);",
+      suggestedSqlSnippet: context.dialect === "postgresql"
+        ? "-- Requires the pg_trgm extension; verify the operator class and data first.\nCREATE INDEX idx_table_column_trgm\nON table_name USING gin (column_name gin_trgm_ops);"
+        : undefined,
     }));
   },
 };

@@ -18,8 +18,8 @@ export const orderByRandomRule: AnalyzerRule = {
       statementOffset: start + match.index,
       scoreImpact: 12,
       relatedTopicIds: ["query-optimization-basics", "order-by"],
-      suggestedSqlSnippet:
-        "SELECT *\nFROM table_name TABLESAMPLE SYSTEM (1)\nLIMIT 1;",
+      // Sampling changes selection probabilities and result semantics. Do not
+      // offer a pasteable rewrite without workload and distribution context.
     }));
   },
 };

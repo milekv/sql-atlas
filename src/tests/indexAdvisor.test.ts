@@ -53,4 +53,36 @@ describe("index advisor", () => {
       suggestion.columns.every((column) => !column.includes("select")),
     )).toBe(true);
   });
+
+  it("does not propose indexes for literal text, unknown aliases or ambiguous unqualified columns", () => {
+    const suggestions = suggestIndexes(`SELECT a.id FROM accounts a JOIN orders o ON o.account_id = a.id
+      WHERE 'WHERE fake = 1' = a.status AND a.status = 'open' AND missing.region = 1 AND status = 'open'
+      /* WHERE comment_column = 1 */`);
+    expect(suggestions.some((item) => item.tableName === "missing" || item.columns.includes("fake") ||
+      item.columns.includes("comment_column") || item.columns.includes("status") && item.tableName === "orders")).toBe(false);
+    expect(suggestions.some((item) => item.columns.includes("region"))).toBe(false);
+    expect(suggestions.some((item) => item.tableName === "accounts" && item.columns.includes("status"))).toBe(true);
+  });
+
+  it("does not generate CREATE INDEX for a CTE name or columns outside the filter", () => {
+    const suggestions = suggestIndexes(`WITH recent AS (SELECT id, created_at FROM orders WHERE status = 'paid')
+      SELECT LOWER(label) FROM recent WHERE id = 10`);
+    expect(suggestions.some((item) => item.tableName === "recent")).toBe(false);
+    expect(suggestions.some((item) => item.expression === "LOWER(label)")).toBe(false);
+  });
+
+  it("does not emit PostgreSQL index DDL for other SQL dialects", () => {
+    expect(suggestIndexes("SELECT * FROM users WHERE email = :email", "oracle")).toEqual([]);
+    expect(suggestIndexes("SELECT * FROM dbo.Users WHERE email = @email", "sqlserver")).toEqual([]);
+  });
+
+  it("does not change a schema-qualified table into a different table name", () => {
+    expect(suggestIndexes("SELECT id FROM reporting.events WHERE occurred_at > now()")).toEqual([]);
+  });
+
+  it("does not combine OR alternatives into a misleading composite index", () => {
+    const suggestions = suggestIndexes("SELECT id FROM events WHERE category = 'a' OR status = 'open' ORDER BY created_at");
+    expect(suggestions.some((item) => item.source === "composite")).toBe(false);
+    expect(suggestions.some((item) => item.columns.includes("category"))).toBe(true);
+  });
 });

@@ -5,6 +5,7 @@ import { Button } from "../../components/ui/Button";
 import { Card } from "../../components/ui/Card";
 import { parsePostgresExplainJson } from "../../core/explain/parsePostgresExplainJson";
 import { SqlServerShowplanPage } from "./SqlServerShowplanPage";
+import { OracleXplanPage } from "./OracleXplanPage";
 import { sampleExplainJson } from "../../core/explain/samplePlan";
 import type {
   ExplainRiskHint,
@@ -15,14 +16,15 @@ import type { Translator } from "../../i18n/types";
 
 export const ExplainVisualizerPage = () => {
   const { t } = useApp();
-  const [engine, setEngine] = useState<"postgresql" | "sqlserver">("postgresql");
+  const [engine, setEngine] = useState<"postgresql" | "sqlserver" | "oracle">("postgresql");
   return (
     <div>
       <div className="mb-5 flex gap-2" role="group" aria-label={t("explain.engine")}>
         <Button type="button" variant={engine === "postgresql" ? "primary" : "ghost"} onClick={() => setEngine("postgresql")}>PostgreSQL</Button>
         <Button type="button" variant={engine === "sqlserver" ? "primary" : "ghost"} onClick={() => setEngine("sqlserver")}>SQL Server</Button>
+        <Button type="button" variant={engine === "oracle" ? "primary" : "ghost"} onClick={() => setEngine("oracle")}>Oracle</Button>
       </div>
-      {engine === "postgresql" ? <PostgresExplainVisualizerPage /> : <SqlServerShowplanPage />}
+      {engine === "postgresql" ? <PostgresExplainVisualizerPage /> : engine === "sqlserver" ? <SqlServerShowplanPage /> : <OracleXplanPage />}
     </div>
   );
 };
